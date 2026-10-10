@@ -1,0 +1,17 @@
+import renderdoc as rd
+import rdtest
+
+
+class D3D12_Leak_Check(rdtest.TestCase):
+    demos_test_name = 'D3D12_Leak_Check'
+    demos_frame_cap = 50000
+    demos_frame_count = 10
+    demos_timeout = 120
+
+    def check_capture(self):
+        memory = rd.GetCurrentProcessMemoryUsage()
+
+        if memory > 600*1000*1000:
+            raise rdtest.TestFailureException(f"Memory usage of {memory} is too high")
+
+        rdtest.log.success(f"Capture {self.demos_frame_cap} opened with reasonable memory ({memory})")
