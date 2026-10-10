@@ -466,7 +466,11 @@ CONFIG_SUPPORT_TYPE(rdcarray<rdcstr>)
 
 void RenderDoc::ProcessConfig()
 {
+#if ENABLED(RDOC_WIN32)
+  rdcstr confFile = FileIO::GetAppFolderFilename("captureprobe.conf");
+#else
   rdcstr confFile = FileIO::GetAppFolderFilename("renderdoc.conf");
+#endif
 
   RDCLOG("Loading config from %s", confFile.c_str());
 
@@ -516,7 +520,11 @@ void RenderDoc::SaveConfigSettings()
 {
   if(IsReplayApp())
   {
+#if ENABLED(RDOC_WIN32)
+    rdcstr confFile = FileIO::GetAppFolderFilename("captureprobe.conf");
+#else
     rdcstr confFile = FileIO::GetAppFolderFilename("renderdoc.conf");
+#endif
 
     bool success = false;
 

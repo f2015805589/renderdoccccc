@@ -310,12 +310,12 @@ VkCommandBuffer WrappedVulkan::GetInitStateCmd()
 
     if(IsReplayMode(m_State))
     {
-      VkMarkerRegion::Begin("!!!!RenderDoc Internal: ApplyInitialContents batched list",
+      VkMarkerRegion::Begin("!!!!CaptureProbe Internal: ApplyInitialContents batched list",
                             initStateCurCmd);
     }
     else
     {
-      VkMarkerRegion::Begin("!!!!RenderDoc Internal: PrepareInitialContents batched list",
+      VkMarkerRegion::Begin("!!!!CaptureProbe Internal: PrepareInitialContents batched list",
                             initStateCurCmd);
     }
   }
@@ -5229,14 +5229,14 @@ void WrappedVulkan::ReplayLog(uint32_t startEventID, uint32_t endEventID, Replay
 
   if(!partial)
   {
-    VkMarkerRegion::Begin("!!!!RenderDoc Internal: ApplyInitialContents");
+    VkMarkerRegion::Begin("!!!!CaptureProbe Internal: ApplyInitialContents");
     ApplyInitialContents();
     VkMarkerRegion::End();
   }
 
   m_State = CaptureState::ActiveReplaying;
 
-  VkMarkerRegion::Set(StringFormat::Fmt("!!!!RenderDoc Internal: RenderDoc Replay %d (%d): %u->%u",
+  VkMarkerRegion::Set(StringFormat::Fmt("!!!!CaptureProbe Internal: CaptureProbe Replay %d (%d): %u->%u",
                                         (int)replayType, (int)partial, startEventID, endEventID));
 
   {
@@ -5419,7 +5419,7 @@ void WrappedVulkan::ReplayLog(uint32_t startEventID, uint32_t endEventID, Replay
     });
   }
 
-  VkMarkerRegion::Set("!!!!RenderDoc Internal: Done replay");
+  VkMarkerRegion::Set("!!!!CaptureProbe Internal: Done replay");
 }
 
 template <typename SerialiserType>
@@ -5601,7 +5601,7 @@ rdcstr WrappedVulkan::GetPhysDeviceCompatString(bool externalResource, bool orig
   {
     return StringFormat::Fmt(
         "This was invalid at capture time.\n"
-        "You must use API validation, as RenderDoc does not handle invalid API use like this.\n\n"
+        "You must use API validation, as CaptureProbe does not handle invalid API use like this.\n\n"
         "Captured on device: %s %s, %u.%u.%u",
         ToStr(capture.Vendor()).c_str(), m_OrigPhysicalDeviceData.props.deviceName, capture.Major(),
         capture.Minor(), capture.Patch());

@@ -36,7 +36,7 @@
 
 struct CaptureOptions;
 typedef void(__cdecl *pINTERNAL_SetCaptureOptions)(const CaptureOptions *opts);
-typedef void(__cdecl *pINTERNAL_SetLogFile)(const char *logfile);
+typedef void(__cdecl *pINTERNAL_SetCaptureFile)(const char *logfile);
 typedef void(__cdecl *pINTERNAL_SetDebugLogFile)(const char *logfile);
 
 #if defined(RELEASE)
@@ -61,7 +61,7 @@ void CheckHook()
 
   if(datahandle == NULL)
   {
-    LOGPRINT(L"renderdocshim: can't open global data\n");
+    LOGPRINT(L"captureprobeshim: can't open global data\n");
     return;
   }
 
@@ -70,14 +70,14 @@ void CheckHook()
   if(data == NULL)
   {
     CloseHandle(datahandle);
-    LOGPRINT(L"renderdocshim: can't map global data\n");
+    LOGPRINT(L"captureprobeshim: can't map global data\n");
     return;
   }
 
   if(data->pathmatchstring[0] == 0 || data->pathmatchstring[1] == 0 ||
      data->pathmatchstring[2] == 0 || data->pathmatchstring[3] == 0)
   {
-    LOGPRINT(L"renderdocshim: invalid pathmatchstring: '");
+    LOGPRINT(L"captureprobeshim: invalid pathmatchstring: '");
     LOGPRINT(data->pathmatchstring);
     LOGPRINT(L"'\n");
 
@@ -104,7 +104,7 @@ void CheckHook()
 
     if(find >= 0)
     {
-      LOGPRINT(L"renderdocshim: Hooking into '");
+      LOGPRINT(L"captureprobeshim: Hooking into '");
       LOGPRINT(exepath);
       LOGPRINT(L"', based on '");
       LOGPRINT(data->pathmatchstring);
@@ -116,16 +116,16 @@ void CheckHook()
       {
         pINTERNAL_SetCaptureOptions setopts =
             (pINTERNAL_SetCaptureOptions)GetProcAddress(mod, "INTERNAL_SetCaptureOptions");
-        pINTERNAL_SetLogFile setlogfile =
-            (pINTERNAL_SetLogFile)GetProcAddress(mod, "INTERNAL_SetLogFile");
+        pINTERNAL_SetCaptureFile setcapturefile =
+            (pINTERNAL_SetCaptureFile)GetProcAddress(mod, "INTERNAL_SetCaptureFile");
         pINTERNAL_SetDebugLogFile setdebuglog =
             (pINTERNAL_SetDebugLogFile)GetProcAddress(mod, "INTERNAL_SetDebugLogFile");
 
         if(setopts)
           setopts((const CaptureOptions *)data->opts);
 
-        if(setlogfile && data->capfile[0])
-          setlogfile(data->capfile);
+        if(setcapturefile && data->capfile[0])
+          setcapturefile(data->capfile);
 
         if(setdebuglog && data->debuglog[0])
           setdebuglog(data->debuglog);
@@ -133,7 +133,7 @@ void CheckHook()
     }
     else
     {
-      LOGPRINT(L"renderdocshim: NOT Hooking into '");
+      LOGPRINT(L"captureprobeshim: NOT Hooking into '");
       LOGPRINT(exepath);
       LOGPRINT(L"', based on '");
       LOGPRINT(data->pathmatchstring);
@@ -144,7 +144,7 @@ void CheckHook()
   }
   else
   {
-    LOGPRINT(L"renderdocshim: Failed to allocate exepath\n");
+    LOGPRINT(L"captureprobeshim: Failed to allocate exepath\n");
   }
 
   UnmapViewOfFile(data);

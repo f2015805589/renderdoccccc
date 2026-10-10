@@ -337,7 +337,8 @@ private:
     {
       rdcstr app = strlower(StringFormat::Wide2UTF8(lpApplicationName));
 
-      if(app.contains("renderdoccmd.exe") || app.contains("qrenderdoc.exe"))
+      if(app.contains("captureprobecmd.exe") || app.contains("captureprobeui.exe") ||
+         app.contains("captureprobeui_launcher.exe"))
       {
         inject = false;
       }
@@ -346,7 +347,8 @@ private:
     {
       rdcstr cmd = strlower(StringFormat::Wide2UTF8(lpCommandLine));
 
-      if(cmd.contains("renderdoccmd.exe") || cmd.contains("qrenderdoc.exe"))
+      if(cmd.contains("captureprobecmd.exe") || cmd.contains("captureprobeui.exe") ||
+         cmd.contains("captureprobeui_launcher.exe"))
       {
         inject = false;
       }

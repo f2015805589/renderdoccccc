@@ -324,9 +324,15 @@ int main(int argc, char *argv[])
 #endif
 
   QApplication application(argc, argv);
+#if defined(Q_OS_WIN32)
+  QApplication::setApplicationName(lit("captureprobeui"));
+#else
+  QApplication::setApplicationName(lit("qrenderdoc"));
+#endif
+  QApplication::setApplicationDisplayName(lit("CaptureProbe"));
 
   QCommandLineParser parser;
-  parser.setApplicationDescription(tr("Qt UI for RenderDoc"));
+  parser.setApplicationDescription(tr("CaptureProbe graphics capture and replay UI"));
   QCommandLineOption helpOption = parser.addHelpOption();
   QCommandLineOption versionOption = parser.addVersionOption();
 
@@ -389,7 +395,7 @@ int main(int argc, char *argv[])
 
   if(parser.isSet(versionOption))
   {
-    printf("QRenderDoc v%s (%s)\n", MAJOR_MINOR_VERSION_STRING, RENDERDOC_GetCommitHash());
+    printf("CaptureProbe v%s (%s)\n", MAJOR_MINOR_VERSION_STRING, RENDERDOC_GetCommitHash());
 #if defined(DISTRIBUTION_VERSION)
     printf("Packaged for %s - %s\n", DISTRIBUTION_NAME, DISTRIBUTION_CONTACT);
 #endif

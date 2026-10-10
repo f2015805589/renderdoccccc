@@ -631,21 +631,21 @@ void GraphicsTest::Prepare(int argc, char **argv)
   pRENDERDOC_GetAPI RENDERDOC_GetAPI = NULL;
 
 #if defined(WIN32)
-  HMODULE mod = GetModuleHandleA("renderdoc.dll");
+  HMODULE mod = GetModuleHandleA("captureprobe.dll");
   if(mod)
-    RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(mod, "RENDERDOC_GetAPI");
+    RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(mod, CAPTUREPROBE_GET_API_NAME);
 #elif defined(ANDROID)
   void *mod = dlopen("libVkLayer_GLES_RenderDoc.so", RTLD_NOW | RTLD_NOLOAD);
   if(mod)
-    RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)dlsym(mod, "RENDERDOC_GetAPI");
+    RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)dlsym(mod, CAPTUREPROBE_GET_API_NAME);
 #elif defined(__linux__)
   void *mod = dlopen("librenderdoc.so", RTLD_NOW | RTLD_NOLOAD);
   if(mod)
-    RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)dlsym(mod, "RENDERDOC_GetAPI");
+    RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)dlsym(mod, CAPTUREPROBE_GET_API_NAME);
 #elif defined(__APPLE__)
   void *mod = dlopen("librenderdoc.dylib", RTLD_NOW | RTLD_NOLOAD);
   if(mod)
-    RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)dlsym(mod, "RENDERDOC_GetAPI");
+    RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)dlsym(mod, CAPTUREPROBE_GET_API_NAME);
 #else
 #error UNKNOWN PLATFORM
 #endif

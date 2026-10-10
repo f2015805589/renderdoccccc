@@ -1,0 +1,22 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <CaptureProbeProductName>CaptureProbe</CaptureProbeProductName>
+    <CaptureProbeBaseName>captureprobe</CaptureProbeBaseName>
+    <CaptureProbeCmdBaseName>captureprobecmd</CaptureProbeCmdBaseName>
+    <CaptureProbeUIBaseName>captureprobeui</CaptureProbeUIBaseName>
+    <CaptureProbeLauncherBaseName>captureprobeui_launcher</CaptureProbeLauncherBaseName>
+    <CaptureProbeShimBaseName>captureprobeshim</CaptureProbeShimBaseName>
+    <CaptureProbeVulkanLayerName>VK_LAYER_CAPTUREPROBE_Capture</CaptureProbeVulkanLayerName>
+    <CaptureProbeVulkanEnableVar>ENABLE_VULKAN_CAPTUREPROBE_CAPTURE</CaptureProbeVulkanEnableVar>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+    <Link>
+      <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>RDOC_BASE_NAME=$(CaptureProbeBaseName);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+</Project>

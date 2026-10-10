@@ -308,7 +308,7 @@ static void ActiveRemoteClientThread(ClientThread *threadData,
     reader.ConfigureStructuredExport(&GetRemoteServerChunkName, false, 0, 1.0);
     writer.ConfigureStructuredExport(&GetRemoteServerChunkName, false, 0, 1.0);
 
-    rdcstr filename = FileIO::GetTempFolderFilename() + "/RenderDoc/RemoteServer_Server.log";
+    rdcstr filename = FileIO::GetTempFolderFilename() + "/CaptureProbe/RemoteServer_Server.log";
 
     RDCLOG("Logging remote server work to '%s'", filename.c_str());
 
@@ -1136,10 +1136,13 @@ void RenderDoc::BecomeRemoteServer(const rdcstr &listenhost, uint16_t port,
   if(listenRanges.empty())
   {
     RDCLOG("No whitelist IP ranges configured - using default private IP ranges.");
-    RDCLOG(
-        "Create a config file remoteserver.conf in ~/.renderdoc or %%APPDATA%%/renderdoc to "
-        "narrow "
-        "this down or accept connections from more ranges.");
+#if ENABLED(RDOC_WIN32)
+    RDCLOG("Create a config file remoteserver.conf in ~/.renderdoc or %%APPDATA%%/CaptureProbe to "
+           "narrow this down or accept connections from more ranges.");
+#else
+    RDCLOG("Create a config file remoteserver.conf in ~/.renderdoc or %%APPDATA%%/renderdoc to "
+           "narrow this down or accept connections from more ranges.");
+#endif
 
     listenRanges.push_back(make_rdcpair(Network::MakeIP(10, 0, 0, 0), 0xff000000));
     listenRanges.push_back(make_rdcpair(Network::MakeIP(172, 16, 0, 0), 0xfff00000));
@@ -1416,7 +1419,7 @@ RemoteServer::RemoteServer(Network::Socket *sock, const rdcstr &deviceID)
     reader->ConfigureStructuredExport(&GetRemoteServerChunkName, false, 0, 1.0);
     writer->ConfigureStructuredExport(&GetRemoteServerChunkName, false, 0, 1.0);
 
-    rdcstr filename = FileIO::GetTempFolderFilename() + "/RenderDoc/RemoteServer_Client.log";
+    rdcstr filename = FileIO::GetTempFolderFilename() + "/CaptureProbe/RemoteServer_Client.log";
 
     RDCLOG("Logging remote server work to '%s'", filename.c_str());
 

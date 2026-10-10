@@ -810,7 +810,7 @@ const GLubyte *WrappedOpenGL::glGetString(GLenum name)
   }
   else if(name == eGL_DEBUG_TOOL_NAME_EXT)
   {
-    return (const GLubyte *)"RenderDoc";
+    return (const GLubyte *)"CaptureProbe";
   }
   return GL.glGetString(name);
 }
@@ -826,7 +826,7 @@ const GLubyte *WrappedOpenGL::glGetStringi(GLenum name, GLuint i)
   }
   else if(name == eGL_DEBUG_TOOL_NAME_EXT)
   {
-    return (const GLubyte *)"RenderDoc";
+    return (const GLubyte *)"CaptureProbe";
   }
   return GL.glGetStringi(name, i);
 }

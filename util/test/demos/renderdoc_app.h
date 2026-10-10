@@ -851,7 +851,12 @@ typedef RENDERDOC_API_1_7_0 RENDERDOC_API_1_6_0;
 //
 // This entry point can be obtained via GetProcAddress/dlsym if RenderDoc is available.
 //
-// The name is the same as the typedef - "RENDERDOC_GetAPI"
+#if defined(WIN32) || defined(__WIN32__) || defined(_WIN32) || defined(_MSC_VER)
+#define CAPTUREPROBE_GET_API_NAME "CAPTUREPROBE_GetAPI"
+#else
+#define CAPTUREPROBE_GET_API_NAME "RENDERDOC_GetAPI"
+#endif
+// Use CAPTUREPROBE_GET_API_NAME with GetProcAddress/dlsym to locate the exported entry point.
 //
 // This function is not thread safe, and should not be called on multiple threads at once.
 // Ideally, call this once as early as possible in your application's startup, before doing

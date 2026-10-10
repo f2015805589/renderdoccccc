@@ -46,22 +46,28 @@ rdcstr DoStringise(const SDBasic &el)
 template <>
 rdcstr DoStringise(const ResultCode &el)
 {
+#if defined(RENDERDOC_PLATFORM_WIN32) || defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
+  const char *productName = "CaptureProbe";
+#else
+  const char *productName = "RenderDoc";
+#endif
+
   BEGIN_ENUM_STRINGISE(ResultCode)
   {
     STRINGISE_ENUM_CLASS_NAMED(Succeeded, "Success");
     STRINGISE_ENUM_CLASS_NAMED(UnknownError, "Unknown error");
     STRINGISE_ENUM_CLASS_NAMED(InternalError, "Internal error");
     STRINGISE_ENUM_CLASS_NAMED(FileNotFound, "File not found");
-    STRINGISE_ENUM_CLASS_NAMED(InjectionFailed, "RenderDoc injection failed");
-    STRINGISE_ENUM_CLASS_NAMED(IncompatibleProcess,
-                               "Process is incompatible with this build of RenderDoc");
+    case enumType::InjectionFailed: return rdcstr(productName) + " injection failed";
+    case enumType::IncompatibleProcess:
+      return rdcstr("Process is incompatible with this build of ") + productName;
     STRINGISE_ENUM_CLASS_NAMED(NetworkIOFailed, "Network I/O operation failed");
     STRINGISE_ENUM_CLASS_NAMED(NetworkRemoteBusy, "Remote side of network connection is busy");
     STRINGISE_ENUM_CLASS_NAMED(NetworkVersionMismatch, "Incompatible version");
     STRINGISE_ENUM_CLASS_NAMED(FileIOFailed, "File I/O failed");
-    STRINGISE_ENUM_CLASS_NAMED(
-        FileIncompatibleVersion,
-        "Capture file incompatible due to being made on an different major version of RenderDoc");
+    case enumType::FileIncompatibleVersion:
+      return rdcstr("Capture file incompatible due to being made on an different major version of ") +
+             productName;
     STRINGISE_ENUM_CLASS_NAMED(FileCorrupted, "File is corrupted");
     STRINGISE_ENUM_CLASS_NAMED(FileUnrecognised, "File format is unrecognised");
     STRINGISE_ENUM_CLASS_NAMED(
@@ -69,9 +75,8 @@ rdcstr DoStringise(const ResultCode &el)
     STRINGISE_ENUM_CLASS_NAMED(APIUnsupported, "API used in this capture is unsupported");
     STRINGISE_ENUM_CLASS_NAMED(APIInitFailed,
                                "API initialisation failed while loading the capture");
-    STRINGISE_ENUM_CLASS_NAMED(
-        APIIncompatibleVersion,
-        "Captured API data was made on a newer incompatible version of RenderDoc");
+    case enumType::APIIncompatibleVersion:
+      return rdcstr("Captured API data was made on a newer incompatible version of ") + productName;
     STRINGISE_ENUM_CLASS_NAMED(
         APIHardwareUnsupported,
         "Current replaying hardware unsupported or incompatible with captured hardware");
@@ -95,10 +100,11 @@ rdcstr DoStringise(const ResultCode &el)
     STRINGISE_ENUM_CLASS_NAMED(RemoteServerConnectionLost, "Connection lost to remote server");
     STRINGISE_ENUM_CLASS_NAMED(OutOfMemory, "Encountered an out of memory error");
     STRINGISE_ENUM_CLASS_NAMED(DeviceLost, "Encountered a GPU device lost error");
-    STRINGISE_ENUM_CLASS_NAMED(DataNotAvailable,
-                               "Data was requested through RenderDoc's API which is not available");
-    STRINGISE_ENUM_CLASS_NAMED(InvalidParameter,
-                               "An invalid parameter was passed to RenderDoc's API");
+    case enumType::DataNotAvailable:
+      return rdcstr("Data was requested through ") + productName +
+             "'s API which is not available";
+    case enumType::InvalidParameter:
+      return rdcstr("An invalid parameter was passed to ") + productName + "'s API";
     STRINGISE_ENUM_CLASS_NAMED(CompressionFailed, "Compression or decompression failed");
     STRINGISE_ENUM_CLASS_NAMED(AndroidLayerConfFailed,
                                "Debug layer configuration failed on Android");

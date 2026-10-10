@@ -177,7 +177,7 @@ rdcstr DisassembleDXBC(const bytebuf &shaderBytes, const rdcstr &target)
 
 ; Currently )" NEW_DLL_NAME
            R"( from AMD's driver package is required for GCN disassembly and it cannot be
-; distributed with RenderDoc.
+; distributed with CaptureProbe.
 
 ; To see instructions on how to download and configure it on your system, go to:
 ; https://github.com/baldurk/renderdoc/wiki/GCN-ISA)";

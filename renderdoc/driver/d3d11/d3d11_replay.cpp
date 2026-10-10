@@ -4089,7 +4089,7 @@ RDResult D3D11_CreateReplayDevice(RDCFile *rdc, const ReplayOptions &opts, IRepl
     {
       RETURN_ERROR_RESULT(ResultCode::APIIncompatibleVersion,
                           "D3D11 capture is incompatible version %llu, newest supported by this "
-                          "build of RenderDoc is %llu",
+                          "build of CaptureProbe is %llu",
                           ver, D3D11InitParams::CurrentVersion);
     }
 
@@ -4292,7 +4292,7 @@ RDResult D3D11_CreateReplayDevice(RDCFile *rdc, const ReplayOptions &opts, IRepl
       if(SUCCEEDED(hr) && maxFeatureLevel < D3D_FEATURE_LEVEL_11_0)
       {
         RDCWARN(
-            "Couldn't create FEATURE_LEVEL_11_0 device - RenderDoc requires FEATURE_LEVEL_11_0 "
+            "Couldn't create FEATURE_LEVEL_11_0 device - CaptureProbe requires FEATURE_LEVEL_11_0 "
             "availability - falling back to WARP rasterizer");
         useWarp = warpFallback = true;
       }
@@ -4446,7 +4446,7 @@ RDResult D3D11_CreateReplayDevice(RDCFile *rdc, const ReplayOptions &opts, IRepl
     {
       wrappedDev->AddDebugMessage(
           MessageCategory::Initialization, MessageSeverity::High, MessageSource::RuntimeWarning,
-          "Couldn't create FEATURE_LEVEL_11_0 device - RenderDoc requires FEATURE_LEVEL_11_0 "
+          "Couldn't create FEATURE_LEVEL_11_0 device - CaptureProbe requires FEATURE_LEVEL_11_0 "
           "availability - falling back to WARP rasterizer.\n"
           "Performance and usability will be significantly degraded.");
     }
@@ -4461,7 +4461,7 @@ RDResult D3D11_CreateReplayDevice(RDCFile *rdc, const ReplayOptions &opts, IRepl
 
   if(flags & D3D11_CREATE_DEVICE_DEBUG)
     error +=
-        "\n\nDevelopment RenderDoc builds require D3D debug layers available, "
+        "\n\nDevelopment CaptureProbe builds require D3D debug layers available, "
         "ensure you have the windows SDK or windows feature needed.";
 
   RETURN_ERROR_RESULT(ResultCode::APIHardwareUnsupported, "%s", error.c_str());

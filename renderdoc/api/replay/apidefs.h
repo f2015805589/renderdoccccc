@@ -24,6 +24,8 @@
 
 #pragma once
 
+#include "captureprobe_api.h"
+
 #include <stdint.h>
 
 // Guidelines for documentation:

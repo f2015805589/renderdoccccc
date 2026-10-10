@@ -406,7 +406,7 @@ extern "C" RENDERDOC_API int RENDERDOC_CC RENDERDOC_GetAPI(RENDERDOC_Version ver
 {
   if(outAPIPointers == NULL)
   {
-    RDCERR("Invalid call to RENDERDOC_GetAPI with NULL outAPIPointers");
+    RDCERR("Invalid call to " STRINGIZE(RENDERDOC_GetAPI) " with NULL outAPIPointers");
     return 0;
   }
 

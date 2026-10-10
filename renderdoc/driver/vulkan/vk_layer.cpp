@@ -46,6 +46,22 @@ extern "C" const rdcstr VulkanLayerJSONBasename;
 #undef VK_LAYER_EXPORT
 #define VK_LAYER_EXPORT extern "C" __declspec(dllexport)
 
+// Windows test builds rename the custom loader exports together with the layer
+// registration strings. Android keeps the upstream names in vk_layer_android.cpp.
+#define VK_LAYER_RENDERDOC_CaptureEnumerateDeviceLayerProperties \
+  VK_LAYER_CAPTUREPROBE_CaptureEnumerateDeviceLayerProperties
+#define VK_LAYER_RENDERDOC_CaptureEnumerateDeviceExtensionProperties \
+  VK_LAYER_CAPTUREPROBE_CaptureEnumerateDeviceExtensionProperties
+#define VK_LAYER_RENDERDOC_CaptureEnumerateInstanceExtensionProperties \
+  VK_LAYER_CAPTUREPROBE_CaptureEnumerateInstanceExtensionProperties
+#define VK_LAYER_RENDERDOC_CaptureGetDeviceProcAddr VK_LAYER_CAPTUREPROBE_CaptureGetDeviceProcAddr
+#define VK_LAYER_RENDERDOC_CaptureGetInstanceProcAddr \
+  VK_LAYER_CAPTUREPROBE_CaptureGetInstanceProcAddr
+#define VK_LAYER_RENDERDOC_Capture_layerGetPhysicalDeviceProcAddr \
+  VK_LAYER_CAPTUREPROBE_Capture_layerGetPhysicalDeviceProcAddr
+#define VK_LAYER_RENDERDOC_CaptureNegotiateLoaderLayerInterfaceVersion \
+  VK_LAYER_CAPTUREPROBE_CaptureNegotiateLoaderLayerInterfaceVersion
+
 #elif ENABLED(RDOC_LINUX) || ENABLED(RDOC_ANDROID) || ENABLED(RDOC_APPLE)
 
 #undef VK_LAYER_EXPORT
@@ -77,8 +93,8 @@ void KeepLayerAlive()
     PFN_vkCreateInstance create = (PFN_vkCreateInstance)dlsym(module, "vkCreateInstance");
     VkApplicationInfo app = {
         VK_STRUCTURE_TYPE_APPLICATION_INFO, NULL,
-        "RenderDoc forced instance",        VK_MAKE_VERSION(1, 0, 0),
-        "RenderDoc forced instance",        VK_MAKE_VERSION(1, 0, 0),
+        "CaptureProbe forced instance",     VK_MAKE_VERSION(1, 0, 0),
+        "CaptureProbe forced instance",     VK_MAKE_VERSION(1, 0, 0),
         VK_MAKE_VERSION(1, 0, 0),
     };
     VkInstanceCreateInfo info = {
@@ -112,7 +128,11 @@ class VulkanHook : LibraryHook
     // we don't register any library or function hooks because we use the layer system
 
     // support self-hosted capture by checking our filename and tweaking the env var we set
+#if ENABLED(RDOC_WIN32) && defined(RDOC_BASE_NAME)
+    if(VulkanLayerJSONBasename != STRINGIZE(RDOC_BASE_NAME))
+#else
     if(VulkanLayerJSONBasename != "renderdoc")
+#endif
     {
       Process::RegisterEnvironmentModification(EnvironmentModification(
           EnvMod::Set, EnvSep::NoSep,
@@ -310,19 +330,25 @@ VKAPI_ATTR void VKAPI_CALL hooked_vkDestroyInstance(VkInstance instance, const V
 
 #pragma comment( \
     linker,      \
-    "/EXPORT:VK_LAYER_RENDERDOC_CaptureEnumerateDeviceLayerProperties=_VK_LAYER_RENDERDOC_CaptureEnumerateDeviceLayerProperties@12")
+    "/EXPORT:VK_LAYER_CAPTUREPROBE_CaptureEnumerateDeviceLayerProperties=_VK_LAYER_CAPTUREPROBE_CaptureEnumerateDeviceLayerProperties@12")
 #pragma comment( \
     linker,      \
-    "/EXPORT:VK_LAYER_RENDERDOC_CaptureEnumerateDeviceExtensionProperties=_VK_LAYER_RENDERDOC_CaptureEnumerateDeviceExtensionProperties@16")
+    "/EXPORT:VK_LAYER_CAPTUREPROBE_CaptureEnumerateDeviceExtensionProperties=_VK_LAYER_CAPTUREPROBE_CaptureEnumerateDeviceExtensionProperties@16")
 #pragma comment( \
     linker,      \
-    "/EXPORT:VK_LAYER_RENDERDOC_CaptureEnumerateInstanceExtensionProperties=_VK_LAYER_RENDERDOC_CaptureEnumerateInstanceExtensionProperties@16")
+    "/EXPORT:VK_LAYER_CAPTUREPROBE_CaptureEnumerateInstanceExtensionProperties=_VK_LAYER_CAPTUREPROBE_CaptureEnumerateInstanceExtensionProperties@16")
 #pragma comment( \
     linker,      \
-    "/EXPORT:VK_LAYER_RENDERDOC_CaptureGetDeviceProcAddr=_VK_LAYER_RENDERDOC_CaptureGetDeviceProcAddr@8")
+    "/EXPORT:VK_LAYER_CAPTUREPROBE_CaptureGetDeviceProcAddr=_VK_LAYER_CAPTUREPROBE_CaptureGetDeviceProcAddr@8")
 #pragma comment( \
     linker,      \
-    "/EXPORT:VK_LAYER_RENDERDOC_CaptureGetInstanceProcAddr=_VK_LAYER_RENDERDOC_CaptureGetInstanceProcAddr@8")
+    "/EXPORT:VK_LAYER_CAPTUREPROBE_CaptureGetInstanceProcAddr=_VK_LAYER_CAPTUREPROBE_CaptureGetInstanceProcAddr@8")
+#pragma comment( \
+    linker,      \
+    "/EXPORT:VK_LAYER_CAPTUREPROBE_CaptureNegotiateLoaderLayerInterfaceVersion=_VK_LAYER_CAPTUREPROBE_CaptureNegotiateLoaderLayerInterfaceVersion@4")
+#pragma comment( \
+    linker,      \
+    "/EXPORT:VK_LAYER_CAPTUREPROBE_Capture_layerGetPhysicalDeviceProcAddr=_VK_LAYER_CAPTUREPROBE_Capture_layerGetPhysicalDeviceProcAddr@8")
 #endif
 
 extern "C" {
@@ -350,7 +376,7 @@ VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL VK_LAYER_RENDERDOC_CaptureEnumera
         RENDERDOC_VULKAN_LAYER_NAME,
         VK_API_VERSION_1_0,
         VK_MAKE_VERSION(RENDERDOC_VERSION_MAJOR, RENDERDOC_VERSION_MINOR, 0),
-        "Debugging capture layer for RenderDoc",
+        "Debugging capture layer for CaptureProbe",
     };
 
     // set the one layer property

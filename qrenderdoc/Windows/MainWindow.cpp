@@ -1244,7 +1244,7 @@ void MainWindow::SetTitle(const QString &filename)
   if(m_Ctx.Replay().CurrentRemote().IsValid())
     prefix += tr("Remote: %1 - ").arg(m_Ctx.Replay().CurrentRemote().Name());
 
-  QString text = prefix + lit("RenderDoc ");
+  QString text = prefix + lit("CaptureProbe ");
 
   if(RENDERDOC_STABLE_BUILD)
     text += lit(FULL_VERSION_STRING);
@@ -1513,7 +1513,7 @@ void MainWindow::CheckUpdates(bool forceCheck, UpdateResultMethod callback)
     return;
   }
 
-#if RENDERDOC_OFFICIAL_BUILD
+#if RENDERDOC_OFFICIAL_BUILD && !defined(RENDERDOCCCC_BUILD)
 
   // if the current version isn't the one we expected, clear any cached update state
   if(m_Ctx.Config().CheckUpdate_CurrentVersion != MAJOR_MINOR_VERSION_STRING)
@@ -1639,11 +1639,16 @@ void MainWindow::SetNoUpdate()
 
 void MainWindow::UpdatePopup()
 {
+#if defined(RENDERDOCCCC_BUILD)
+  // A cached upstream response must never launch the upstream installer for this fork.
+  return;
+#else
   if(!m_Ctx.Config().CheckUpdate_UpdateAvailable || !m_Ctx.Config().CheckUpdate_AllowChecks)
     return;
 
   UpdateDialog update((QString)m_Ctx.Config().CheckUpdate_UpdateResponse);
   RDDialog::show(&update);
+#endif
 }
 
 void MainWindow::ShowLiveCapture(LiveCapture *live)
@@ -3092,14 +3097,10 @@ void MainWindow::on_action_Check_for_Updates_triggered()
       }
       case UpdateResult::Unofficial:
       {
-        QMessageBox::StandardButton res =
-            RDDialog::question(this, tr("Unofficial build"),
-                               tr("You are running an unofficial build, not a stable release.\n"
-                                  "Updates are only available for installed release builds\n\n"
-                                  "Would you like to open the builds list in a browser?"));
-
-        if(res == QMessageBox::Yes)
-          QDesktopServices::openUrl(lit("https://renderdoc.org/builds"));
+        RDDialog::information(
+            this, tr("Updates unavailable"),
+            tr("This CaptureProbe build cannot install upstream RenderDoc binary updates. Get a "
+               "matching CaptureProbe build from the source that provided this copy."));
         break;
       }
       case UpdateResult::Latest:

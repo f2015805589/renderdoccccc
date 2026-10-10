@@ -523,9 +523,14 @@ void RenderDoc::RecreateCrashHandler()
   FileIO::GetExecutableFilename(exename);
   exename = strlower(exename);
 
-  // only create crash handler when we're not in renderdoccmd (to prevent infinite loop as
-  // the crash handler itself launches renderdoccmd)
-  if(exename.contains("renderdoccmd"))
+#if ENABLED(RDOC_WIN32)
+  const char *cmdName = "captureprobecmd";
+#else
+  const char *cmdName = "renderdoccmd";
+#endif
+
+  // only create a crash handler outside the command-line helper (which launches this handler)
+  if(exename.contains(cmdName))
     return;
 
 #if ENABLED(RDOC_WIN32)
@@ -690,7 +695,7 @@ void RenderDoc::Initialise()
   {
     rdcstr capture_filename;
 
-    const rdcstr base = IsReplayApp() ? "RenderDoc" : "RenderDoc_app";
+    const rdcstr base = IsReplayApp() ? "CaptureProbe" : "CaptureProbe_app";
 
     FileIO::GetDefaultFiles(base, capture_filename, m_LoggingFilename, m_Target);
 
@@ -713,7 +718,7 @@ void RenderDoc::Initialise()
       "Unknown";
 #endif
 
-  RDCLOG("RenderDoc v%s %s %s %s (%s) %s", MAJOR_MINOR_VERSION_STRING, platform,
+  RDCLOG("CaptureProbe v%s %s %s %s (%s) %s", MAJOR_MINOR_VERSION_STRING, platform,
          sizeof(uintptr_t) == sizeof(uint64_t) ? "64-bit" : "32-bit",
          ENABLED(RDOC_RELEASE) ? "Release" : "Development", GitVersionHash,
          IsReplayApp() ? "loaded in replay application" : "capturing application");

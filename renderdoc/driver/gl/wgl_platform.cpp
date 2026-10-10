@@ -398,7 +398,7 @@ class WGLPlatform : public GLPlatform
       ReleaseDC(w, dc);
       DestroyWindow(w);
       RETURN_ERROR_RESULT(ResultCode::APIHardwareUnsupported,
-                          "RenderDoc requires WGL_ARB_create_context and WGL_ARB_pixel_format");
+                          "CaptureProbe requires WGL_ARB_create_context and WGL_ARB_pixel_format");
     }
 
     WGL.wglMakeCurrent(NULL, NULL);
@@ -418,7 +418,7 @@ class WGLPlatform : public GLPlatform
     pfd.cDepthBits = 0;
     pfd.cStencilBits = 0;
 
-    w = CreateWindowEx(WS_EX_CLIENTEDGE, WINDOW_CLASS_NAME, L"RenderDoc replay window",
+    w = CreateWindowEx(WS_EX_CLIENTEDGE, WINDOW_CLASS_NAME, L"CaptureProbe replay window",
                        WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 32, 32, NULL, NULL,
                        GetModuleHandle(NULL), NULL);
 
@@ -475,7 +475,7 @@ class WGLPlatform : public GLPlatform
       DestroyWindow(w);
       RETURN_ERROR_RESULT(
           ResultCode::APIHardwareUnsupported,
-          "Couldn't create at least 3.2 context - RenderDoc requires OpenGL 3.2 availability");
+          "Couldn't create at least 3.2 context - CaptureProbe requires OpenGL 3.2 availability");
     }
 
     GLCoreVersion = major * 10 + minor;

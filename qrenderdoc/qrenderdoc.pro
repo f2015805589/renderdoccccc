@@ -13,6 +13,7 @@ lessThan(QT_MAJOR_VERSION, 5): error("requires Qt 5.6; found $$[QT_VERSION]")
 equals(QT_MAJOR_VERSION, 5): lessThan(QT_MINOR_VERSION, 6): error("requires Qt 5.6; found $$[QT_VERSION]")
 
 TARGET = qrenderdoc
+win32: TARGET = captureprobeui
 TEMPLATE = app
 
 # include path for core renderdoc API
@@ -99,13 +100,15 @@ win32 {
 	LIBS += user32.lib
 
 	# Link against the core library
-	LIBS += $$DESTDIR/renderdoc.lib
+	LIBS += $$DESTDIR/captureprobe.lib
 
 	# Link against the version library
 	LIBS += $$DESTDIR/version.lib
 
 	QMAKE_CXXFLAGS_WARN_ON -= -w34100 
 	DEFINES += RENDERDOC_PLATFORM_WIN32
+	DEFINES += RENDERDOCCCC_BUILD=1
+	DEFINES += RDOC_BASE_NAME=captureprobe
 
 } else {
 	isEmpty(CMAKE_DIR) {

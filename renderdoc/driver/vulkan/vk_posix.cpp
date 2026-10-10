@@ -419,7 +419,7 @@ bool VulkanReplay::CheckVulkanLayer(VulkanLayerFlags &flags, rdcarray<rdcstr> &m
     return false;
   }
 
-  // it's impractical to determine whether the currently running RenderDoc build is just a loose
+  // it's impractical to determine whether the currently running CaptureProbe build is just a loose
   // extract of a tarball or a distribution that decided to put all the files in the same folder,
   // and whether or not the library is in ld's searchpath.
   //
