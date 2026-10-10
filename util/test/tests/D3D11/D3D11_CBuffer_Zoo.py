@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 import rdtest
-import renderdoc as rd
+import renderccccc as rd
 
 
 class D3D11_CBuffer_Zoo(rdtest.TestCase):

@@ -43,7 +43,7 @@
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
 
-// RenderDoc modification
+// Renderccccc modification
 // Want to allow building this on linux
 //#include <windows.h>
 typedef unsigned long DWORD;
@@ -81,7 +81,7 @@ struct _SECURITY_ATTRIBUTES; typedef struct _SECURITY_ATTRIBUTES SECURITY_ATTRIB
 #ifdef VK_USE_PLATFORM_XLIB_XRANDR_EXT
 #include <X11/Xlib.h>
 
-// RenderDoc modification
+// Renderccccc modification
 // Don't want to depend on Xrandr for this
 //#include <X11/extensions/Xrandr.h>
 

@@ -1,16 +1,16 @@
 Example: Memory bindings
 ========================
 
-For Vulkan and D3D12 that support explicit memory binding of texture and buffer resources to memory, RenderDoc exposes this information to python. This example shows how to query that and some simple processing we can do with it
+For Vulkan and D3D12 that support explicit memory binding of texture and buffer resources to memory, Renderccccc exposes this information to python. This example shows how to query that and some simple processing we can do with it
 
 Memory information
 ------------------
 
-In each of :class:`~renderdoc.TextureDescription` and :class:`~renderdoc.BufferDescription` there are two members - :data:`~renderdoc.TextureDescription.memory` and :data:`~renderdoc.TextureDescription.memoryOffset` which give the memory object being bound to, as well as the offset in that object.
+In each of :class:`~renderccccc.TextureDescription` and :class:`~renderccccc.BufferDescription` there are two members - :data:`~renderccccc.TextureDescription.memory` and :data:`~renderccccc.TextureDescription.memoryOffset` which give the memory object being bound to, as well as the offset in that object.
 
 For APIs where this binding does not happen explicitly, both members will be unset. This can also happen on Vulkan if the resource was created but never bound to memory, or on D3D12 if the resource was created as a committed resource with no separate memory object.
 
-We will iterate over the list of textures (:meth:`~qrenderdoc.CaptureContext.GetTextures`) and buffers (:meth:`~qrenderdoc.CaptureContext.GetBuffers`) and store each memory range into a dictionary indexed by the memory object being bound to.
+We will iterate over the list of textures (:meth:`~qrenderccccc.CaptureContext.GetTextures`) and buffers (:meth:`~qrenderccccc.CaptureContext.GetBuffers`) and store each memory range into a dictionary indexed by the memory object being bound to.
 
 Finally we use a simple O(n\ :sup:`2`) check for any overlaps of resources, printing each one as we find it.
 

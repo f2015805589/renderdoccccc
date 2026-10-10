@@ -62,7 +62,7 @@ OpenGL
 patchlist
 Perf
 Profiler
-qrenderdoc
+qrenderccccc
 Qualcomm
 Radeon
 rasterization
@@ -73,7 +73,7 @@ rasterizing
 raytracing
 rdc
 rects
-renderdoc
+renderccccc
 renderers
 renderpass
 Renderpass

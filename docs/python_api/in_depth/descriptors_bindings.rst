@@ -1,18 +1,18 @@
 Descriptors and Bindings
 ========================
 
-When querying bindings either for a given shader stage or binding type, generally you can use the high-level :doc:`pipeline helper <../examples/pipe_state>` :class:`~renderdoc.PipeState` which lets you query the details of logical bindings without needing to worry about the API details or how those bindings are set. This can be checked against the :doc:`shader_refl` to see what resources are bound where (see also :doc:`../examples/shader_refl`).
+When querying bindings either for a given shader stage or binding type, generally you can use the high-level :doc:`pipeline helper <../examples/pipe_state>` :class:`~renderccccc.PipeState` which lets you query the details of logical bindings without needing to worry about the API details or how those bindings are set. This can be checked against the :doc:`shader_refl` to see what resources are bound where (see also :doc:`../examples/shader_refl`).
 
 This removes a significant amount of API-specific complexity or variance in bindings and lets you directly see e.g. which particular texture was bound to a given shader parameter. All you need to understand is that a 'descriptor' is the umbrella term for how a given resource or set of data is configured and provided to a shader by the CPU-side API.
 
 .. warning::
     By its nature this abstraction is complex and doesn't map directly to any one API's concepts.
 
-    For the large majority of use cases you *very likely* do not need something more complex than the :class:`~renderdoc.PipeState` helper.
+    For the large majority of use cases you *very likely* do not need something more complex than the :class:`~renderccccc.PipeState` helper.
     
     You should only delve into the details below if this high-level helper does not provide the information you need like specific binding points, or you want API-specific information not represented in the information from that helper.
 
-Access to descriptors or fixed resource bindings is an area of graphics APIs that varies significantly between each API. To avoid implementing a large amount of access code duplicated per-API with each API's quirks, RenderDoc builds the high-level helper on top of a more detailed and more direct abstraction.
+Access to descriptors or fixed resource bindings is an area of graphics APIs that varies significantly between each API. To avoid implementing a large amount of access code duplicated per-API with each API's quirks, Renderccccc builds the high-level helper on top of a more detailed and more direct abstraction.
 
 Allowances are provided for looking up API-specific information or interpreting the bindings with an API-specific lens, if the code knows which API it is being used with and how it wants to interpret that data.
 
@@ -30,72 +30,72 @@ This concept maps more closely in some APIs (like Vulkan descriptor sets or D3D1
 Descriptor Access
 -----------------
 
-The RenderDoc replay can be queried for which descriptors were accessed via :meth:`~renderdoc.ReplayController.GetDescriptorAccess`. This returns a number of :class:`~renderdoc.DescriptorAccess` mappings.
+The Renderccccc replay can be queried for which descriptors were accessed via :meth:`~renderccccc.ReplayController.GetDescriptorAccess`. This returns a number of :class:`~renderccccc.DescriptorAccess` mappings.
 
 Each access indicates a single use of a descriptor by a shader binding:
 
 Descriptor
-    * :data:`~renderdoc.DescriptorAccess.descriptorStore` = ``Descriptor Store XYZ``
-    * :data:`~renderdoc.DescriptorAccess.byteOffset` = ``0x1000``
-    * :data:`~renderdoc.DescriptorAccess.byteSize` = ``64``
+    * :data:`~renderccccc.DescriptorAccess.descriptorStore` = ``Descriptor Store XYZ``
+    * :data:`~renderccccc.DescriptorAccess.byteOffset` = ``0x1000``
+    * :data:`~renderccccc.DescriptorAccess.byteSize` = ``64``
 
 Binding
-    * :data:`~renderdoc.DescriptorAccess.type` = :data:`~renderdoc.DescriptorType.Image`
-    * :data:`~renderdoc.DescriptorAccess.index` = ``3``
-    * (if the binding is arrayed) :data:`~renderdoc.DescriptorAccess.arrayElement` = ``500``
+    * :data:`~renderccccc.DescriptorAccess.type` = :data:`~renderccccc.DescriptorType.Image`
+    * :data:`~renderccccc.DescriptorAccess.index` = ``3``
+    * (if the binding is arrayed) :data:`~renderccccc.DescriptorAccess.arrayElement` = ``500``
 
 .. note::
     Depending on the API and usage pattern this may either reflect a dynamically determined access from the shader at runtime, or it may be a statically declared access.
 
-These :class:`~renderdoc.DescriptorAccess` mappings provide a relation of what happened at the current event. "This binding" was accessed and it read from "that descriptor".
+These :class:`~renderccccc.DescriptorAccess` mappings provide a relation of what happened at the current event. "This binding" was accessed and it read from "that descriptor".
 
 Descriptor Contents
 -------------------
 
-To find information about the descriptor, you can query the contents of a descriptor via :meth:`~renderdoc.ReplayController.GetDescriptors` and :meth:`~renderdoc.ReplayController.GetSamplerDescriptors`. It is encouraged to call these functions in batch rather than individually per descriptor.
+To find information about the descriptor, you can query the contents of a descriptor via :meth:`~renderccccc.ReplayController.GetDescriptors` and :meth:`~renderccccc.ReplayController.GetSamplerDescriptors`. It is encouraged to call these functions in batch rather than individually per descriptor.
 
-It is safe to call :meth:`~renderdoc.ReplayController.GetDescriptors` on a sampler descriptor and vice versa as long as it is a valid descriptor, a default-initialised structure will be returned if there is a mismatch in descriptor type. On some APIs descriptors can contain both a resource and a sampler in which case both functions will return valid appropriate data.
+It is safe to call :meth:`~renderccccc.ReplayController.GetDescriptors` on a sampler descriptor and vice versa as long as it is a valid descriptor, a default-initialised structure will be returned if there is a mismatch in descriptor type. On some APIs descriptors can contain both a resource and a sampler in which case both functions will return valid appropriate data.
 
-For this query you need to know the :doc:`descriptor store <resourceids>`, and the offset and size within it referred to. When querying a range with a :data:`~renderdoc.DescriptorRange.count` greater than 1, the size becomes the stride.
+For this query you need to know the :doc:`descriptor store <resourceids>`, and the offset and size within it referred to. When querying a range with a :data:`~renderccccc.DescriptorRange.count` greater than 1, the size becomes the stride.
 
 .. warning::
     Due to the emulation/virtualisation mentioned above where this does not map directly onto a real concept on all APIs, you should not make any assumptions about what valid descriptor sizes and offsets are. Although in some cases these may literally be bytes in user-visible memory, this is not guaranteed.
 
-The descriptor data returned (:class:`~renderdoc.Descriptor`) will have optional fields as it will depend on the particular type of the resource as well as what functionality the API provides. Common information would be not only the :doc:`bound resource <resourceids>` (:data:`~renderdoc.Descriptor.resource`) but also a byte offset (:data:`~renderdoc.Descriptor.byteOffset`) or stride (:data:`~renderdoc.Descriptor.elementByteSize`) of buffer data, or a format cast (:data:`~renderdoc.Descriptor.format`) or mip level (:data:`~renderdoc.Descriptor.firstMip`) of a texture.
+The descriptor data returned (:class:`~renderccccc.Descriptor`) will have optional fields as it will depend on the particular type of the resource as well as what functionality the API provides. Common information would be not only the :doc:`bound resource <resourceids>` (:data:`~renderccccc.Descriptor.resource`) but also a byte offset (:data:`~renderccccc.Descriptor.byteOffset`) or stride (:data:`~renderccccc.Descriptor.elementByteSize`) of buffer data, or a format cast (:data:`~renderccccc.Descriptor.format`) or mip level (:data:`~renderccccc.Descriptor.firstMip`) of a texture.
 
 .. note::
     You can query a descriptor at any time, however without outside knowledge of the valid offset and size of a descriptor within a descriptor store you might not find valid data.
 
-For the common case of looking up the currently accessed descriptors you can use :meth:`~renderdoc.PipeState.GetAllUsedDescriptors`, which provides both resource descriptor and sampler descriptors per accessed descriptors all together.
+For the common case of looking up the currently accessed descriptors you can use :meth:`~renderccccc.PipeState.GetAllUsedDescriptors`, which provides both resource descriptor and sampler descriptors per accessed descriptors all together.
 
 Shader Bindings
 ---------------
 
 Finally to correlate to the shader binding in the :doc:`shader reflection <shader_refl>`, each descriptor access gives information about which binding performed the access.
 
-The shader binding is identified by a shader stage, a descriptor type, an index, and an array element. The descriptor type can be :ref:`categorised <binding-types>` as sampler, constant block, read-only or read-write resource according to helper function :func:`~renderdoc.CategoryForDescriptorType` or per-type by :func:`~renderdoc.IsConstantBlockDescriptor` etc.
+The shader binding is identified by a shader stage, a descriptor type, an index, and an array element. The descriptor type can be :ref:`categorised <binding-types>` as sampler, constant block, read-only or read-write resource according to helper function :func:`~renderccccc.CategoryForDescriptorType` or per-type by :func:`~renderccccc.IsConstantBlockDescriptor` etc.
 
-For example if a texture "DiffuseTexture" was element ``[2]`` in the shader reflection's :data:`~renderdoc.ShaderReflection.readOnlyResources` list, the descriptor access would contain something like:
+For example if a texture "DiffuseTexture" was element ``[2]`` in the shader reflection's :data:`~renderccccc.ShaderReflection.readOnlyResources` list, the descriptor access would contain something like:
 
 .. highlight:: python
 .. code:: python
 
-    access.stage == renderdoc.ShaderStage.Pixel
-    access.descriptorType == renderdoc.DescriptorType.Image
+    access.stage == renderccccc.ShaderStage.Pixel
+    access.descriptorType == renderccccc.DescriptorType.Image
     access.index == 2
     access.arrayElement == 0
 
 .. note:: 
-    On some APIs, it is possible for descriptor accesses to go directly to a descriptor store from shader code with no binding or reflection information declared at all. In this case the :data:`~renderdoc.DescriptorAccess.index` member will be set to :data:`~renderdoc.DescriptorAccess.NoShaderBinding`.
+    On some APIs, it is possible for descriptor accesses to go directly to a descriptor store from shader code with no binding or reflection information declared at all. In this case the :data:`~renderccccc.DescriptorAccess.index` member will be set to :data:`~renderccccc.DescriptorAccess.NoShaderBinding`.
 
 Location and binding information
 --------------------------------
 
 With the above process you can determine which bindings are used, which descriptors they reference, and the contents of those descriptors. However on most APIs there is additional API-specific binding or location information associated either with a binding or a descriptor which can be helpful to display or filter by.
 
-In the shader reflection, each binding contains two additional values: :ref:`fixedBindSetOrSpace <fixed-bind-numbers>` and :ref:`fixedBindNumber <fixed-bind-numbers>`. These values are entirely arbitrary and they serve no purpose within RenderDoc's general APIs for accessing descriptors, as their interpretation is API-specific. On some APIs these values may not be set at all. They are provided for informational purposes, if you want to look up resources in a way only relevant for a particular graphics API.
+In the shader reflection, each binding contains two additional values: :ref:`fixedBindSetOrSpace <fixed-bind-numbers>` and :ref:`fixedBindNumber <fixed-bind-numbers>`. These values are entirely arbitrary and they serve no purpose within Renderccccc's general APIs for accessing descriptors, as their interpretation is API-specific. On some APIs these values may not be set at all. They are provided for informational purposes, if you want to look up resources in a way only relevant for a particular graphics API.
 
-Similarly, descriptors in a descriptor store may have locations associated. In the same way that you can query descriptor contents with :meth:`~renderdoc.ReplayController.GetDescriptors` you can query locations with :meth:`~renderdoc.ReplayController.GetDescriptorLocations` which returns a list of :class:`~renderdoc.DescriptorLogicalLocation`.
+Similarly, descriptors in a descriptor store may have locations associated. In the same way that you can query descriptor contents with :meth:`~renderccccc.ReplayController.GetDescriptors` you can query locations with :meth:`~renderccccc.ReplayController.GetDescriptorLocations` which returns a list of :class:`~renderccccc.DescriptorLogicalLocation`.
 
 Again this information is API-specific and is not used for any lookups or processing, only for user display or API-specific details.
 
@@ -109,7 +109,7 @@ This section provides information about API-specific details and how they are su
 D3D11
 ^^^^^
 
-Descriptor access is determined at load time based on shader reflection, all resources are assumed to be used and skipping due to control flow is not considered. The shader reflection ``fixedBindNumber`` gives the register number for each resource with RenderDoc's descriptor types corresponding naturally to ``cX``, ``tX``, ``uX`` and ``sX`` registers.
+Descriptor access is determined at load time based on shader reflection, all resources are assumed to be used and skipping due to control flow is not considered. The shader reflection ``fixedBindNumber`` gives the register number for each resource with Renderccccc's descriptor types corresponding naturally to ``cX``, ``tX``, ``uX`` and ``sX`` registers.
 
 A single fake descriptor storage object is used for all current bindings, with the descriptor offset identifying the binding.
 
@@ -120,7 +120,7 @@ This means it is possible to iterate over all descriptors in a store without any
 OpenGL
 ^^^^^^
 
-Descriptor access is determined per-event based on a combination between shader reflection and querying current uniform values. Resources which are declared but known to be unused will be marked with :data:`~renderdoc.DescriptorAccess.staticallyUnused` being set to ``True``. The shader reflection ``fixedBindNumber`` will be set to 0 as the binding number is not necessarily fixed and could vary per-event via uniform.
+Descriptor access is determined per-event based on a combination between shader reflection and querying current uniform values. Resources which are declared but known to be unused will be marked with :data:`~renderccccc.DescriptorAccess.staticallyUnused` being set to ``True``. The shader reflection ``fixedBindNumber`` will be set to 0 as the binding number is not necessarily fixed and could vary per-event via uniform.
 
 A single fake descriptor storage object is used for all current bindings, with the descriptor offset identifying the binding.
 
@@ -133,11 +133,11 @@ D3D12
 
 Descriptor access is combined from access to single bindings being determined statically from reflection, and arrayed/bindless or direct-heap SM6.6 access being fetched at runtime per event. The shader reflection ``fixedBindNumber`` and ``fixedBindSetOrSpace`` gives the register number and register space for each resource.
 
-RenderDoc does not directly provide root signature mappings, but the unrolled root signature is available in the D3D12 pipeline state member :data:`~renderdoc.D3D12State.rootSignature`.
+Renderccccc does not directly provide root signature mappings, but the unrolled root signature is available in the D3D12 pipeline state member :data:`~renderccccc.D3D12State.rootSignature`.
 
-SM6.6 direct-heap access will be identified with a descriptor access with :data:`~renderdoc.DescriptorAccess.index` set to :data:`~renderdoc.DescriptorAccess.NoShaderBinding`.
+SM6.6 direct-heap access will be identified with a descriptor access with :data:`~renderccccc.DescriptorAccess.index` set to :data:`~renderccccc.DescriptorAccess.NoShaderBinding`.
 
-Descriptor storage is primarily in descriptor heap objects, however root constants, root descriptors, and static samplers will be stored in virtualised storage elsewhere. The exact objects used as storage of these descriptor for querying should not be relied upon. Similarly the descriptor size in all cases is RenderDoc-defined and will not necessarily match the descriptor size used in D3D12 during capture.
+Descriptor storage is primarily in descriptor heap objects, however root constants, root descriptors, and static samplers will be stored in virtualised storage elsewhere. The exact objects used as storage of these descriptor for querying should not be relied upon. Similarly the descriptor size in all cases is Renderccccc-defined and will not necessarily match the descriptor size used in D3D12 during capture.
 
 Descriptor locations have their index in the heap listed as the ``fixedBindNumber`` and the string name is the SM6.6 indexed ``ResourceDescriptorHeap[]`` or ``SamplerDescriptorHeap[]``. As descriptors are implicitly untyped and fully visible, there is no type or shader stage information in a descriptor's location.
 

@@ -8,7 +8,7 @@ pushd "${REPO_ROOT}"
 echo Using ${PYTHON_ROOT} and ${QT_ROOT} for build
 
 # Build 32-bit Release
-MSYS2_ARG_CONV_EXCL="*" msbuild.exe /p:VSPythonOverridePath="$(native_path "${PYTHON_ROOT}")" /p:QtOverridePath="$(native_path "${QT_ROOT}")" /nologo /m /fl4 /flp4':Verbosity=minimal;Encoding=ASCII;logfile=dist/build32.log' renderdoc.sln /t:Rebuild /p:'Configuration=Release;Platform=x86'
+MSYS2_ARG_CONV_EXCL="*" msbuild.exe /p:VSPythonOverridePath="$(native_path "${PYTHON_ROOT}")" /p:QtOverridePath="$(native_path "${QT_ROOT}")" /nologo /m /fl4 /flp4':Verbosity=minimal;Encoding=ASCII;logfile=dist/build32.log' renderccccc.sln /t:Rebuild /p:'Configuration=Release;Platform=x86'
 
 if [ ! -f ./Win32/Release/captureprobe.dll ] || [ ! -f ./Win32/Release/captureprobeui.exe ] || [ ! -f ./Win32/Release/captureprobecmd.exe ] || [ ! -f ./Win32/Release/captureprobeshim32.dll ] || [ ! -f ./Win32/Release/captureprobe.json ] || [ ! -f ./Win32/Release/captureprobeui_launcher.exe ] ; then
 	echo "Failed to build 32-bit release mode.";
@@ -16,7 +16,7 @@ if [ ! -f ./Win32/Release/captureprobe.dll ] || [ ! -f ./Win32/Release/capturepr
 fi
 
 # Build 64-bit Release
-MSYS2_ARG_CONV_EXCL="*" msbuild.exe /p:VSPythonOverridePath="$(native_path "${PYTHON_ROOT}")" /p:QtOverridePath="$(native_path "${QT_ROOT}")" /nologo /m /fl4 /flp4':Verbosity=minimal;Encoding=ASCII;logfile=dist/build64.log' renderdoc.sln /t:Rebuild /p:'Configuration=Release;Platform=x64'
+MSYS2_ARG_CONV_EXCL="*" msbuild.exe /p:VSPythonOverridePath="$(native_path "${PYTHON_ROOT}")" /p:QtOverridePath="$(native_path "${QT_ROOT}")" /nologo /m /fl4 /flp4':Verbosity=minimal;Encoding=ASCII;logfile=dist/build64.log' renderccccc.sln /t:Rebuild /p:'Configuration=Release;Platform=x64'
 
 if [ ! -f ./x64/Release/captureprobe.dll ] || [ ! -f ./x64/Release/captureprobeui.exe ] || [ ! -f ./x64/Release/captureprobecmd.exe ] || [ ! -f ./x64/Release/captureprobeshim64.dll ] || [ ! -f ./x64/Release/captureprobe.json ] || [ ! -f ./x64/Release/captureprobeui_launcher.exe ] ; then
 	echo "Failed to build 64-bit release mode.";
@@ -31,7 +31,7 @@ pushd docs
 popd; # docs
 
 # if we didn't produce a chm file, bail out even if sphinx didn't return an error code above
-if [ ! -f ./Documentation/htmlhelp/renderdoc.chm ]; then
+if [ ! -f ./Documentation/htmlhelp/renderccccc.chm ]; then
 	echo "Didn't auto-build chm file. Missing HTML Help Workshop?"
 
 	if [[ "$STRICT" == "yes" ]]; then

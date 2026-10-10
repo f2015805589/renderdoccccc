@@ -1,5 +1,5 @@
-import renderdoc as rd
-import qrenderdoc as qrd
+import renderccccc as rd
+import qrenderccccc as qrd
 from typing import List
 
 
@@ -25,8 +25,8 @@ def find_largest_draw(best_size: int, actions: List[rd.ActionDescription]):
     return ret, best_size
 
 
-def open_window(pyrenderdoc: qrd.CaptureContext, data):
-    mqt = pyrenderdoc.Extensions().GetMiniQtHelper()
+def open_window(pyrenderccccc: qrd.CaptureContext, data):
+    mqt = pyrenderccccc.Extensions().GetMiniQtHelper()
 
     top = mqt.CreateToplevelWidget("Scavenger Hunt")
 
@@ -36,14 +36,14 @@ def open_window(pyrenderdoc: qrd.CaptureContext, data):
     label = mqt.CreateLabel()
     mqt.SetWidgetText(label, "Guess the biggest draw!")
 
-    eid, size = find_largest_draw(0, pyrenderdoc.CurRootActions())
+    eid, size = find_largest_draw(0, pyrenderccccc.CurRootActions())
 
-    def do_guess(pyrenderdoc, widget, text):
+    def do_guess(pyrenderccccc, widget, text):
         print(f"Spoiler: largest draw is {eid}, it drew {size} indices")
 
-        if pyrenderdoc.CurEvent() == eid:
+        if pyrenderccccc.CurEvent() == eid:
             msg = "You found it!"
-        elif pyrenderdoc.CurEvent() < eid:
+        elif pyrenderccccc.CurEvent() < eid:
             msg = "The largest draw is later in the capture..."
         else:
             msg = "The largest draw is earlier in the capture..."
@@ -65,14 +65,14 @@ def open_window(pyrenderdoc: qrd.CaptureContext, data):
     mqt.AddWidget(group, label)
     mqt.AddWidget(group, button)
 
-    pyrenderdoc.AddDockWindow(
-        top, qrd.DockReference.TopOf, pyrenderdoc.GetEventBrowser().Widget(), 0.2
+    pyrenderccccc.AddDockWindow(
+        top, qrd.DockReference.TopOf, pyrenderccccc.GetEventBrowser().Widget(), 0.2
     )
 
 
-def register(version, pyrenderdoc: qrd.CaptureContext):
-    print(f"Tutorial extension registered in RenderDoc {version}")
+def register(version, pyrenderccccc: qrd.CaptureContext):
+    print(f"Tutorial extension registered in Renderccccc {version}")
 
-    pyrenderdoc.Extensions().RegisterPanelMenu(
+    pyrenderccccc.Extensions().RegisterPanelMenu(
         qrd.PanelMenu.EventBrowser, ["Tutorial", "Scavenger Hunt"], open_window
     )

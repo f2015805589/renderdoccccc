@@ -178,8 +178,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
       extCreate.uavSlot = 7;
       extCreate.crossfireMode = AGS_CROSSFIRE_MODE_DISABLE;
-      extCreate.pAppName = L"RenderDoc demos";
-      extCreate.pEngineName = L"RenderDoc demos";
+      extCreate.pAppName = L"Renderccccc demos";
+      extCreate.pEngineName = L"Renderccccc demos";
 
       AGSReturnCode agsret =
           dyn_agsDriverExtensionsDX11_CreateDevice(ags, &devCreate, &extCreate, &ret);

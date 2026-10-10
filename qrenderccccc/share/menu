@@ -1,0 +1,6 @@
+?package(local.renderccccc):needs="x11" section="Applications/Programming" \
+	title="Renderccccc" \
+	command="qrenderccccc" \
+	icon="/usr/share/pixmaps/renderccccc-icon-32x32.xpm" \
+	icon16x16="/usr/share/pixmaps/renderccccc-icon-16x16.xpm" \
+	icon32x32="/usr/share/pixmaps/renderccccc-icon-32x32.xpm"

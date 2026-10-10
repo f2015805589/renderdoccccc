@@ -575,7 +575,7 @@ void GraphicsTest::Prepare(int argc, char **argv)
 
   prepared = true;
 
-  dataRoot = GetEnvVar("RENDERDOC_DEMOS_DATA");
+  dataRoot = GetEnvVar("RENDERCCCCC_DEMOS_DATA");
 
   if(dataRoot.empty())
     dataRoot = GetCWD() + "/data/demos/";
@@ -628,31 +628,31 @@ void GraphicsTest::Prepare(int argc, char **argv)
     }
   }
 
-  pRENDERDOC_GetAPI RENDERDOC_GetAPI = NULL;
+  pRENDERCCCCC_GetAPI RENDERCCCCC_GetAPI = NULL;
 
 #if defined(WIN32)
   HMODULE mod = GetModuleHandleA("captureprobe.dll");
   if(mod)
-    RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(mod, CAPTUREPROBE_GET_API_NAME);
+    RENDERCCCCC_GetAPI = (pRENDERCCCCC_GetAPI)GetProcAddress(mod, CAPTUREPROBE_GET_API_NAME);
 #elif defined(ANDROID)
-  void *mod = dlopen("libVkLayer_GLES_RenderDoc.so", RTLD_NOW | RTLD_NOLOAD);
+  void *mod = dlopen("libVkLayer_GLES_Renderccccc.so", RTLD_NOW | RTLD_NOLOAD);
   if(mod)
-    RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)dlsym(mod, CAPTUREPROBE_GET_API_NAME);
+    RENDERCCCCC_GetAPI = (pRENDERCCCCC_GetAPI)dlsym(mod, CAPTUREPROBE_GET_API_NAME);
 #elif defined(__linux__)
-  void *mod = dlopen("librenderdoc.so", RTLD_NOW | RTLD_NOLOAD);
+  void *mod = dlopen("librenderccccc.so", RTLD_NOW | RTLD_NOLOAD);
   if(mod)
-    RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)dlsym(mod, CAPTUREPROBE_GET_API_NAME);
+    RENDERCCCCC_GetAPI = (pRENDERCCCCC_GetAPI)dlsym(mod, CAPTUREPROBE_GET_API_NAME);
 #elif defined(__APPLE__)
-  void *mod = dlopen("librenderdoc.dylib", RTLD_NOW | RTLD_NOLOAD);
+  void *mod = dlopen("librenderccccc.dylib", RTLD_NOW | RTLD_NOLOAD);
   if(mod)
-    RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)dlsym(mod, CAPTUREPROBE_GET_API_NAME);
+    RENDERCCCCC_GetAPI = (pRENDERCCCCC_GetAPI)dlsym(mod, CAPTUREPROBE_GET_API_NAME);
 #else
 #error UNKNOWN PLATFORM
 #endif
 
-  if(RENDERDOC_GetAPI)
+  if(RENDERCCCCC_GetAPI)
   {
-    int ret = RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_7_0, (void **)&rdoc);
+    int ret = RENDERCCCCC_GetAPI(eRENDERCCCCC_API_Version_1_7_0, (void **)&rdoc);
 
     if(ret != 1)
       rdoc = NULL;

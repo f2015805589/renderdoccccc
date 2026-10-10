@@ -7,12 +7,12 @@ A common desire for a UI extension is to receive callbacks when certain actions 
 
     This interface is not specific to UI extensions but extreme care should be taken about adding capture viewers from scripts as the lifetime is harder to manage. If a capture viewer is added it will continue to receive events until it is removed, which can be harder to do if the object is not still accessible.
 
-An interface (:class:`~qrenderdoc.CaptureViewer`) is provided which can be inherited from and implemented in python to receive these events, as shown below:
+An interface (:class:`~qrenderccccc.CaptureViewer`) is provided which can be inherited from and implemented in python to receive these events, as shown below:
 
 .. highlight:: python
 .. code:: python
 
-    import qrenderdoc as qrd
+    import qrenderccccc as qrd
 
     class Viewer(qrd.CaptureViewer):
         def OnCaptureLoaded(self):
@@ -32,7 +32,7 @@ An interface (:class:`~qrenderdoc.CaptureViewer`) is provided which can be inher
         ctx.AddCaptureViewer(view)
 
     def unregister():
-        pyrenderdoc.RemoveCaptureViewer(view)
+        pyrenderccccc.RemoveCaptureViewer(view)
 
 .. warning::
     If you implement an `__init__` function to construct your object, it is important that you explicitly call the parent class constructor with `super().__init__()` otherwise the interface will be left partially initialised and will likely crash when passing the object to C++.

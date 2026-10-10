@@ -1,22 +1,22 @@
 # these imports are not strictly necessary, but are convenient
-import renderdoc
-import qrenderdoc
+import renderccccc
+import qrenderccccc
 
 # this is here to give autocomplete when editing the example
 # in VS Code where it doesn't know about this global
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    pyrenderdoc = qrenderdoc.CaptureContext()
+    pyrenderccccc = qrenderccccc.CaptureContext()
 
-if not pyrenderdoc.IsCaptureLoaded():
-    filename = pyrenderdoc.Extensions().OpenFileName("Choose a capture", "", "*.rdc")
+if not pyrenderccccc.IsCaptureLoaded():
+    filename = pyrenderccccc.Extensions().OpenFileName("Choose a capture", "", "*.rdc")
 
-    pyrenderdoc.LoadCapture(filename, renderdoc.ReplayOptions(), filename, False, True)
+    pyrenderccccc.LoadCapture(filename, renderccccc.ReplayOptions(), filename, False, True)
 
-pipe = pyrenderdoc.CurPipelineState()
+pipe = pyrenderccccc.CurPipelineState()
 
-get_name = lambda id: pyrenderdoc.GetResourceName(id)
+get_name = lambda id: pyrenderccccc.GetResourceName(id)
 
 print("-------------------------")
 print("        Outputs          ")
@@ -27,7 +27,7 @@ outs = pipe.GetOutputTargets()
 for i, out in enumerate(outs):
     id = out.resource
     # ignore any targets that are unbound
-    if id != renderdoc.ResourceId():
+    if id != renderccccc.ResourceId():
         print(f"Out {i}: {get_name(id)}")
 
 id = pipe.GetDepthTarget().resource
@@ -41,9 +41,9 @@ print("-------------------------")
 id = pipe.GetGraphicsPipelineObject()
 print(f"Pipeline: {get_name(id)}")
 
-id = pipe.GetShader(renderdoc.ShaderStage.Vertex)
+id = pipe.GetShader(renderccccc.ShaderStage.Vertex)
 print(f"VS: {get_name(id)}")
-id = pipe.GetShader(renderdoc.ShaderStage.Pixel)
+id = pipe.GetShader(renderccccc.ShaderStage.Pixel)
 print(f"PS: {get_name(id)}")
 
 print()
@@ -51,7 +51,7 @@ print("-------------------------")
 print("   Constant Blocks (VS)  ")
 print("-------------------------")
 
-cbs = pipe.GetConstantBlocks(renderdoc.ShaderStage.Vertex)
+cbs = pipe.GetConstantBlocks(renderccccc.ShaderStage.Vertex)
 
 # print out the stage even though we've asked for vertex CBs.
 # the index corresponds to which constant block in the vertex
@@ -72,7 +72,7 @@ descs = pipe.GetAllUsedDescriptors(True)
 
 # first we'll iterate over all possible shader stages, and get all
 # the descriptors for that stage
-for stage in renderdoc.ShaderStage:
+for stage in renderccccc.ShaderStage:
     # silently skip stages with no used bindings
     stage_descs = [d for d in descs if d.access.stage == stage]
     if stage_descs == []:
@@ -84,13 +84,13 @@ for stage in renderdoc.ShaderStage:
     for d in stage_descs:
         desc_str = f"{str(d.access.type)} - "
         if (
-            d.sampler.object != renderdoc.ResourceId()
-            and d.descriptor.resource != renderdoc.ResourceId()
+            d.sampler.object != renderccccc.ResourceId()
+            and d.descriptor.resource != renderccccc.ResourceId()
         ):
             desc_str += (
                 f"{get_name(d.descriptor.resource)} + {get_name(d.sampler.object)}"
             )
-        elif d.sampler.object != renderdoc.ResourceId():
+        elif d.sampler.object != renderccccc.ResourceId():
             desc_str += f"{get_name(d.sampler.object)}"
         else:
             desc_str += f"{get_name(d.descriptor.resource)}"
@@ -107,7 +107,7 @@ print("   Descriptors by Type   ")
 print("-------------------------")
 
 # Iterate in a similar way, but this time grouping by descriptor type
-for desctype in renderdoc.DescriptorType:
+for desctype in renderccccc.DescriptorType:
     type_descs = [d for d in descs if d.access.type == desctype]
     if type_descs == []:
         continue
@@ -116,13 +116,13 @@ for desctype in renderdoc.DescriptorType:
     for d in type_descs:
         desc_str = f"{str(d.access.stage)} - "
         if (
-            d.sampler.object != renderdoc.ResourceId()
-            and d.descriptor.resource != renderdoc.ResourceId()
+            d.sampler.object != renderccccc.ResourceId()
+            and d.descriptor.resource != renderccccc.ResourceId()
         ):
             desc_str += (
                 f"{get_name(d.descriptor.resource)} + {get_name(d.sampler.object)}"
             )
-        elif d.sampler.object != renderdoc.ResourceId():
+        elif d.sampler.object != renderccccc.ResourceId():
             desc_str += f"{get_name(d.sampler.object)}"
         else:
             desc_str += f"{get_name(d.descriptor.resource)}"

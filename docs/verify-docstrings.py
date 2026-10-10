@@ -25,7 +25,7 @@ else:
 sys.path.insert(0, os.path.abspath(binpath + 'Development/pymodules'))
 sys.path.insert(0, os.path.abspath(binpath + 'Release/pymodules'))
 
-# Add the build paths to PATH so renderdoc.dll can be located
+# Add the build paths to PATH so renderccccc.dll can be located
 os.environ["PATH"] = os.path.abspath(binpath + 'Development/') + os.pathsep + os.environ["PATH"]
 os.environ["PATH"] = os.path.abspath(binpath + 'Release/') + os.pathsep + os.environ["PATH"]
 
@@ -38,8 +38,8 @@ if sys.platform == 'win32' and sys.version_info[1] >= 8:
 # path to module libraries for linux
 sys.path.insert(0, os.path.abspath('../build/lib'))
 
-import renderdoc as rd
-import qrenderdoc as qrd
+import renderccccc as rd
+import qrenderccccc as qrd
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-p', '--path', help="Add a path to interface files to search (can be used multiple times)", action='append')
@@ -49,7 +49,7 @@ parser.add_argument('-v', '--verbose',
                     help="Run verbosely", action="store_true")
 args = parser.parse_args()
 
-paths = ['../renderdoc/api/replay', '../qrenderdoc/Code/Interface']
+paths = ['../renderccccc/api/replay', '../qrenderccccc/Code/Interface']
 if args.path is not None:
     paths += args.path
 
@@ -79,7 +79,7 @@ def make_c_typeval(ret: str, pattern: bool, typelist: List[str]):
     orig_type = ret
 
     # strip namespace
-    if ret[0:10] == 'renderdoc.':
+    if ret[0:10] == 'renderccccc.':
         ret = ret[10:].replace('.', '::')
 
     # Handle pipelines that are renamed
@@ -119,7 +119,7 @@ def make_c_typeval(ret: str, pattern: bool, typelist: List[str]):
         ret = '(const )?rdcarray<{}> ?[&*]?'.format(inner) if pattern else 'rdcarray<{}>'.format(inner)
     elif ret[0:9] == 'Optional[':
         inner = make_c_typeval(ret[9:-1], pattern, typelist)
-        if 'std::function' in inner or (inner.startswith("RENDERDOC_") and inner.endswith("Callback")):
+        if 'std::function' in inner or (inner.startswith("RENDERCCCCC_") and inner.endswith("Callback")):
             return inner
         ret = '(const )?{} ?\\*?'.format(inner) if pattern else '{} *'.format(inner)
     elif ret[0:6] == 'Tuple[':
@@ -138,7 +138,7 @@ def make_c_typeval(ret: str, pattern: bool, typelist: List[str]):
             ret = '(const )?rdcpair<{}> ?[&*]?'.format(inner) if pattern else 'rdcpair<{}>'.format(inner)
     elif pattern:
         if ret[-8:] == 'Callback':
-            ret = '(RENDERDOC_)?{}'.format(ret)
+            ret = '(RENDERCCCCC_)?{}'.format(ret)
         else:
             if orig_type not in typelist:
                 typelist.append(orig_type)
@@ -194,7 +194,7 @@ def check_function(parent_name, objname, obj, source, global_func, typelist):
 
     global_pattern = ''
     if global_func:
-        global_pattern = r'(RENDERDOC_CC\s*RENDERDOC_)?'
+        global_pattern = r'(RENDERCCCCC_CC\s*RENDERCCCCC_)?'
 
     pattern = r'(?s){} ?{}{}\(\s*{}\)'.format(make_c_typeval(ret, True, typelist), global_pattern, objname, funcargs[0])
     clean = '{} {}({})'.format(make_c_typeval(ret, False, typelist), objname, funcargs[1])
@@ -249,9 +249,9 @@ def check_used_types(objname, module, used_types):
                 parent_name = t[0:idx]
                 if parent_name in dir(parent):
                     parent = parent.__dict__[parent_name]
-                elif parent_name == 'renderdoc':
+                elif parent_name == 'renderccccc':
                     parent = rd
-                elif parent_name == 'qrenderdoc':
+                elif parent_name == 'qrenderccccc':
                     parent = qrd
                 t = t[idx+1:]
                 continue
@@ -259,10 +259,10 @@ def check_used_types(objname, module, used_types):
             count += 1
             print("Error {:3} in {}: Unrecognised reference {}".format(count, objname, type_name))
             if type_name in dir(rd):
-                print("  - Maybe missing namespace to refer to renderdoc.{}?".format(type_name))
+                print("  - Maybe missing namespace to refer to renderccccc.{}?".format(type_name))
             break
 
-check_mods = ['renderdoc', 'qrenderdoc']
+check_mods = ['renderccccc', 'qrenderccccc']
 for mod_name in check_mods:
     mod = sys.modules[mod_name]
     if args.verbose:
@@ -340,9 +340,9 @@ for mod_name in check_mods:
                 pass
 
             # a couple of manual cases that need parameters
-            if qualname == 'renderdoc.SDObject' and instance is None:
+            if qualname == 'renderccccc.SDObject' and instance is None:
                 instance = obj("", "")
-            if qualname == 'renderdoc.SDChunk' and instance is None:
+            if qualname == 'renderccccc.SDChunk' and instance is None:
                 instance = obj("")
 
             instance_warned = False
@@ -408,8 +408,8 @@ for mod_name in check_mods:
                         type_name = type(value).__module__ + '.' + type_name
 
                     type_name = re.sub(r'(.*)rdcarray_of_(.*)', 'List[\\1\\2]', type_name)
-                    type_name = re.sub(r'(renderdoc\.)?u?int[163264]{2}_t', 'int', type_name)
-                    type_name = re.sub(r'(renderdoc\.)?rdcstr', 'str', type_name)
+                    type_name = re.sub(r'(renderccccc\.)?u?int[163264]{2}_t', 'int', type_name)
+                    type_name = re.sub(r'(renderccccc\.)?rdcstr', 'str', type_name)
                     type_name = re.sub(r'Pipe_', '', type_name)
                     type_name = re.sub(r'StructuredBufferList', 'List[bytes]', type_name)
                     type_name = re.sub(r'StructuredObjectList', 'List[SDObject]', type_name)

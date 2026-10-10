@@ -1,17 +1,17 @@
 <?xml version='1.0' encoding='windows-1252'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
   <Product Name='CaptureProbe' Id='*' UpgradeCode='9F6B8AE2-0F77-4FA9-84BA-CA3DE9CFA422'
-    Language='1033' Codepage='1252' Version='$(env.RENDERDOC_VERSION).0' Manufacturer='Baldur Karlsson'>
+    Language='1033' Codepage='1252' Version='$(env.RENDERCCCCC_VERSION).0' Manufacturer='Baldur Karlsson'>
 
     <Package Id='*' Keywords='Installer' Description="Installer for CaptureProbe"
-      Comments='CaptureProbe local test build based on RenderDoc (https://renderdoc.org/)' Manufacturer='Baldur Karlsson'
+      Comments='CaptureProbe local test build based on Renderccccc (https://renderccccc.org/)' Manufacturer='Baldur Karlsson'
       InstallerVersion='301' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
 
     <UI> 
       <Error Id="25000">Please use the 64-bit installer - the 64-bit version of CaptureProbe fully supports capturing 32-bit programs.</Error>
     </UI> 
 
-    <Property Id="MajorMinorVersion">$(env.RENDERDOC_VERSION)</Property>
+    <Property Id="MajorMinorVersion">$(env.RENDERCCCCC_VERSION)</Property>
 
     <Property Id="REINSTALLMODE" Value="amus"/> 
 
@@ -29,9 +29,9 @@
       <UpgradeVersion Minimum="0.18.0"
         IncludeMinimum="yes"
         IncludeMaximum="yes"
-        Maximum="$(env.RENDERDOC_VERSION).0"
+        Maximum="$(env.RENDERCCCCC_VERSION).0"
         Property="OLDERVERSIONBEINGUPGRADED" />
-      <UpgradeVersion OnlyDetect="yes" Property="NEWERVERSIONDETECTED" Minimum="$(env.RENDERDOC_VERSION).0" IncludeMinimum="no" />
+      <UpgradeVersion OnlyDetect="yes" Property="NEWERVERSIONDETECTED" Minimum="$(env.RENDERCCCCC_VERSION).0" IncludeMinimum="no" />
     </Upgrade>
 
     <Condition Message="A later version of [ProductName] is already installed"> 
@@ -45,9 +45,9 @@
       <Directory Id='ProgramFilesFolder' Name='PFiles'>
         <Directory Id='INSTALLDIR' Name='CaptureProbe'>
 
-          <Component Id='QRenderDoc' Guid='0FCFCAE9-F53E-48C0-85F0-F1C55A91C30A'>
+          <Component Id='QRenderccccc' Guid='0FCFCAE9-F53E-48C0-85F0-F1C55A91C30A'>
             <File Id='captureprobeuiEXE' Name='captureprobeui.exe' DiskId='1' Source='dist/Release32/captureprobeui.exe' KeyPath='yes'>
-              <Shortcut Id="startmenuRenderDoc" Directory="ProgramMenuDir" Name="CaptureProbe" WorkingDirectory='INSTALLDIR' Icon="icon.ico" IconIndex="0" Advertise="yes" />
+              <Shortcut Id="startmenuRenderccccc" Directory="ProgramMenuDir" Name="CaptureProbe" WorkingDirectory='INSTALLDIR' Icon="icon.ico" IconIndex="0" Advertise="yes" />
             </File>
 
             <RegistryValue Root="HKLM" Id="VerbRDC" Action="write" 
@@ -82,16 +82,16 @@
 
           </Component>
 
-          <Component Id='RenderDocCPP' Guid='2E6F718F-8BCC-4D41-9688-E99CF2F6B303'>
-            <File Id='RenderDocCPP' Name='captureprobe.dll' DiskId='1' Source='dist/Release32/captureprobe.dll' KeyPath='yes' />
-            <File Id='RenderDocJSON' Name='captureprobe.json' DiskId='1' Source='dist/Release32/captureprobe.json' />
+          <Component Id='RendercccccCPP' Guid='2E6F718F-8BCC-4D41-9688-E99CF2F6B303'>
+            <File Id='RendercccccCPP' Name='captureprobe.dll' DiskId='1' Source='dist/Release32/captureprobe.dll' KeyPath='yes' />
+            <File Id='RendercccccJSON' Name='captureprobe.json' DiskId='1' Source='dist/Release32/captureprobe.json' />
             <File Id='D3DCompiler47' Name='d3dcompiler_47.dll' DiskId='1' Source='dist/Release32/d3dcompiler_47.dll' />
-            <File Id='RenderDocSHIM' Name='captureprobeshim32.dll' DiskId='1' Source='dist/Release32/captureprobeshim32.dll' />
+            <File Id='RendercccccSHIM' Name='captureprobeshim32.dll' DiskId='1' Source='dist/Release32/captureprobeshim32.dll' />
             <File Id='dbghelpDLL' Name='dbghelp.dll' DiskId='1' Source='dist/Release32/dbghelp.dll' />
             <File Id='symsrvDLL' Name='symsrv.dll' DiskId='1' Source='dist/Release32/symsrv.dll' />
             <File Id='symsrvYES' Name='symsrv.yes' DiskId='1' Source='dist/Release32/symsrv.yes' />
 
-            <File Id='RenderDocAPIheader' Name='renderdoc_app.h' DiskId='1' Source='dist/Release32/renderdoc_app.h' />
+            <File Id='RendercccccAPIheader' Name='renderccccc_app.h' DiskId='1' Source='dist/Release32/renderccccc_app.h' />
 
             <RegistryValue Root="HKLM" Id="RDCCLSID" Action="write" 
               Key="Software\Classes\CLSID\{5D6BF029-A6BA-417A-8523-120492B1DCE3}" 
@@ -99,12 +99,12 @@
               Type="expandable" />
             <RegistryValue Root="HKLM" Id="RDCCLSIDServer" Action="write" 
               Key="Software\Classes\CLSID\{5D6BF029-A6BA-417A-8523-120492B1DCE3}\InprocServer32" 
-              Value='[#RenderDocCPP]' 
+              Value='[#RendercccccCPP]'
               Type="expandable" />
 
             <RegistryValue Root="HKLM" Id="RDCVulkanImplicitLayer" Action="write"
               Key="Software\Khronos\Vulkan\ImplicitLayers" 
-              Name='[#RenderDocJSON]'
+              Name='[#RendercccccJSON]'
               Value='0'
               Type="integer" />
 
@@ -114,8 +114,8 @@
             <File Id='LICENSE' Name='LICENSE.rtf' DiskId='1' Source='util/installer/LICENSE.rtf' KeyPath='yes' />
           </Component>
 
-          <Component Id='RenderDocCMD' Guid='97338A5D-8FDB-4DF5-AEC7-14B36F234F29'>
-            <File Id='RenderDocCMD' Name='captureprobecmd.exe' DiskId='1' Source='dist/Release32/captureprobecmd.exe' KeyPath='yes' />
+          <Component Id='RendercccccCMD' Guid='97338A5D-8FDB-4DF5-AEC7-14B36F234F29'>
+            <File Id='RendercccccCMD' Name='captureprobecmd.exe' DiskId='1' Source='dist/Release32/captureprobecmd.exe' KeyPath='yes' />
           </Component>
 
           <Component Id='Qt' Guid='63C1C176-5B7C-4D29-9382-8E0FA75C5B80'>
@@ -151,7 +151,7 @@
           </Directory>
 
           <Component Id='Documentation' Guid='CD32B446-6DC1-49E4-8FE9-509E1AFB126D'>
-            <File Id='Documentation' Name='renderdoc.chm' DiskId='1' Source='dist/Release32/renderdoc.chm' KeyPath='yes'>
+            <File Id='Documentation' Name='renderccccc.chm' DiskId='1' Source='dist/Release32/renderccccc.chm' KeyPath='yes'>
               <Shortcut Id="startmenuDocs" Directory="ProgramMenuDir" Name="CaptureProbe Documentation" Icon='chm.ico' Advertise="yes" />
             </File>
           </Component>
@@ -197,8 +197,8 @@
 
             <Directory Id='plugins_android' Name='android'>
               <Component Id='android_plugin' Guid='D469744A-7915-46B8-88B4-4B76223EE8CB'>
-                <File Id='APKarm32' Name='org.renderdoc.renderdoccmd.arm32.apk' DiskId='1' Source='dist/Release32/plugins/android/org.renderdoc.renderdoccmd.arm32.apk' KeyPath='yes' />
-                <File Id='APKarm64' Name='org.renderdoc.renderdoccmd.arm64.apk' DiskId='1' Source='dist/Release32/plugins/android/org.renderdoc.renderdoccmd.arm64.apk' />
+                <File Id='APKarm32' Name='org.renderccccc.renderccccccmd.arm32.apk' DiskId='1' Source='dist/Release32/plugins/android/org.renderccccc.renderccccccmd.arm32.apk' KeyPath='yes' />
+                <File Id='APKarm64' Name='org.renderccccc.renderccccccmd.arm64.apk' DiskId='1' Source='dist/Release32/plugins/android/org.renderccccc.renderccccccmd.arm64.apk' />
                 <File Id='adb' Name='adb.exe' DiskId='1' Source='dist/Release32/plugins/android/adb.exe' />
                 <File Id='AdbWinApi' Name='AdbWinApi.dll' DiskId='1' Source='dist/Release32/plugins/android/AdbWinApi.dll' />
                 <File Id='AdbWinUsbApi' Name='AdbWinUsbApi.dll' DiskId='1' Source='dist/Release32/plugins/android/AdbWinUsbApi.dll' />
@@ -360,9 +360,9 @@
 
     <Feature Id='Complete' Title='CaptureProbe' Description='Everything included.' AllowAdvertise='no' Absent='disallow' Display='expand' Level='1' ConfigurableDirectory='INSTALLDIR'>
       <Feature Id='MainProgram' Title='Program' Description='The main executable with everything needed to capture and replay.' AllowAdvertise='no' Absent='disallow' Level='1'>
-        <ComponentRef Id='QRenderDoc' />
-        <ComponentRef Id='RenderDocCPP' />
-        <ComponentRef Id='RenderDocCMD' />
+        <ComponentRef Id='QRenderccccc' />
+        <ComponentRef Id='RendercccccCPP' />
+        <ComponentRef Id='RendercccccCMD' />
 
         <ComponentRef Id='Qt' />
         <ComponentRef Id='Python' />
@@ -415,9 +415,9 @@
     <WixVariable Id="WixUIDialogBmp" Value="util/installer/dlgbmp.bmp" />
 
     <Icon Id="chm.ico"  SourceFile="util/installer/chm.ico" />
-    <Icon Id="icon.ico" SourceFile="qrenderdoc/Resources/icon.ico" />
+    <Icon Id="icon.ico" SourceFile="qrenderccccc/Resources/icon.ico" />
     <Property Id="ARPPRODUCTICON" Value="icon.ico" />
-    <Property Id="ARPHELPLINK" Value="http://renderdoc.org/" />
+    <Property Id="ARPHELPLINK" Value="http://renderccccc.org/" />
 
   </Product>
 </Wix>

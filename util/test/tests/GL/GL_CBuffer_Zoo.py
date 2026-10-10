@@ -1,7 +1,7 @@
 from typing import Callable, List
 
 import rdtest
-import renderdoc as rd
+import renderccccc as rd
 
 
 class GL_CBuffer_Zoo(rdtest.TestCase):

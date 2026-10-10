@@ -15,12 +15,12 @@ You can open the python scripting panel from the window menu. It offers both an 
 Examples
 --------
 
-A number of included example scripts are included for running to demonstrate use of the python APIs that RenderDoc exposes. Opening any of these example scripts will create a new temporary tab with the contents of the example script, but they will not be saved to disk.
+A number of included example scripts are included for running to demonstrate use of the python APIs that Renderccccc exposes. Opening any of these example scripts will create a new temporary tab with the contents of the example script, but they will not be saved to disk.
 
 UI extensions
 -------------
 
-UI extensions that are enumerated by RenderDoc will be listed with all python and markdown files as well as :file:`extension.json`, for editing within RenderDoc.
+UI extensions that are enumerated by Renderccccc will be listed with all python and markdown files as well as :file:`extension.json`, for editing within Renderccccc.
 
 Right clicking on a UI extension can offer additional management options like enabling or reloading an extension, or revealing it in the file explorer.
 
@@ -34,7 +34,7 @@ Python documentation
 
 The full :doc:`python API <../python_api/index>` documentation contains a guide on how to get started with writing python scripts and UI extensions.
 
-To get started the :code:`pyrenderdoc` object corresponds to a :class:`~qrenderdoc.CaptureContext` object through which the internal API and UI windows can be obtained.
+To get started the :code:`pyrenderccccc` object corresponds to a :class:`~qrenderccccc.CaptureContext` object through which the internal API and UI windows can be obtained.
 
 For Qt integration, if available, you can import :code:`PySide2` which provides python bindings for the Qt API.
 

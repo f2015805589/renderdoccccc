@@ -1,18 +1,18 @@
 # these imports are not strictly necessary, but are convenient
-import renderdoc
-import qrenderdoc
+import renderccccc
+import qrenderccccc
 
 # this is here to give autocomplete when editing the example
 # in VS Code where it doesn't know about this global
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    pyrenderdoc = qrenderdoc.CaptureContext()
+    pyrenderccccc = qrenderccccc.CaptureContext()
 
-if not pyrenderdoc.IsCaptureLoaded():
-    filename = pyrenderdoc.Extensions().OpenFileName("Choose a capture", "", "*.rdc")
+if not pyrenderccccc.IsCaptureLoaded():
+    filename = pyrenderccccc.Extensions().OpenFileName("Choose a capture", "", "*.rdc")
 
-    pyrenderdoc.LoadCapture(filename, renderdoc.ReplayOptions(), filename, False, True)
+    pyrenderccccc.LoadCapture(filename, renderccccc.ReplayOptions(), filename, False, True)
 
 # prime numbers have exactly 2 integer factors.
 # note the // operator in python does integer-division
@@ -23,12 +23,12 @@ def isprime(n):
 # our main filter function. Could use the params or other things passed in
 # to do more complex filtering
 def filter_func(
-    ctx: qrenderdoc.CaptureContext,
+    ctx: qrenderccccc.CaptureContext,
     filter: str,
     params: str,
     eventId: int,
-    chunk: renderdoc.SDChunk,
-    action: renderdoc.ActionDescription,
+    chunk: renderccccc.SDChunk,
+    action: renderccccc.ActionDescription,
     eventName: str,
 ):
     return isprime(eventId)
@@ -37,7 +37,7 @@ def filter_func(
 # the parser gives us a chance to parse the params and cache the data,
 # this is only called when the filter is modified. It also lets us
 # error-check any params we want
-def parser_func(ctx: qrenderdoc.CaptureContext, filter: str, params: str):
+def parser_func(ctx: qrenderccccc.CaptureContext, filter: str, params: str):
     if "error" in params:
         return f"You shouldn't put 'error' in ${filter}()"
     return ""
@@ -45,15 +45,15 @@ def parser_func(ctx: qrenderdoc.CaptureContext, filter: str, params: str):
 
 # the completer can take the current params string and dynamically
 # provide auto-complete suggestions for what to add.
-def completer_func(ctx: qrenderdoc.CaptureContext, filter: str, params: str):
+def completer_func(ctx: qrenderccccc.CaptureContext, filter: str, params: str):
     return ["foo", "bar", "error"]
 
 
 # In a UI extension we'd register and unregister over the lifetime of the extension.
 # But we can also just unregister unconditionally, and then re-register. Note if you
 # do not unregister then this will fail and will refuse to overwrite an existing filter.
-pyrenderdoc.GetEventBrowser().UnregisterEventFilterFunction("prime")
-pyrenderdoc.GetEventBrowser().RegisterEventFilterFunction(
+pyrenderccccc.GetEventBrowser().UnregisterEventFilterFunction("prime")
+pyrenderccccc.GetEventBrowser().RegisterEventFilterFunction(
     "prime",
     "Show only events with prime EIDs.",
     filter_func,

@@ -1,7 +1,7 @@
 from typing import List
 
 import rdtest
-import renderdoc as rd
+import renderccccc as rd
 
 
 class D3D12_Vertex_UAV(rdtest.TestCase):

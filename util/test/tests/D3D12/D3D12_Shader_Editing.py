@@ -1,5 +1,5 @@
 import rdtest
-import renderdoc as rd
+import renderccccc as rd
 
 
 class D3D12_Shader_Editing(rdtest.TestCase):

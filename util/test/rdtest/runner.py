@@ -12,7 +12,7 @@ import queue
 import datetime
 import time
 from typing import IO, List, Tuple, Type
-import renderdoc as rd
+import renderccccc as rd
 from . import util
 from . import testcase
 from .logging import log
@@ -253,7 +253,7 @@ def run_tests(test_include: str, test_exclude: str, debugger: bool, parallel: in
     if plat == 'nt' or 'Windows' in platform.platform():
         plat = 'win32'
 
-    log.header(f"Tests running for RenderDoc Version {rd.GetVersionString()} ({rd.GetCommitHash()})")
+    log.header(f"Tests running for Renderccccc Version {rd.GetVersionString()} ({rd.GetCommitHash()})")
     log.header(f"On {platform.platform()}")
 
     # make parallel=0 for no parallelism so we can use it as bool flag
@@ -312,7 +312,7 @@ def run_tests(test_include: str, test_exclude: str, debugger: bool, parallel: in
                         if os.path.exists(args[i]):
                             args[i] = str(Path(args[i]).resolve())
 
-                    if 'renderdoccmd' in sys.executable:
+                    if 'renderccccccmd' in sys.executable:
                         args = ['vulkanlayer', '--register', '--system']
 
                     ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, ' '.join(args), None, 1)
@@ -328,7 +328,7 @@ def run_tests(test_include: str, test_exclude: str, debugger: bool, parallel: in
                 log.print("Couldn't register vulkan layer properly, might need admin rights")
                 sys.exit(1)
 
-    os.environ['RENDERDOC_DEMOS_DATA'] = util.get_data_path('demos')
+    os.environ['RENDERCCCCC_DEMOS_DATA'] = util.get_data_path('demos')
 
     testcase.TestCase.set_test_list(fetch_tests())
 
@@ -449,14 +449,14 @@ def run_tests(test_include: str, test_exclude: str, debugger: bool, parallel: in
 
         logfile = server.retrieve_latest_server_log(util.get_tmp_dir())
         if logfile is not None and os.path.exists(logfile):
-            log.inline_file('Replay RenderDoc log', logfile)
+            log.inline_file('Replay Renderccccc log', logfile)
 
         # Do not inline this, as it is usually massive
         server.retrieve_comms_log()
 
     logfile = rd.GetLogFile()
     if os.path.exists(logfile):
-        log.inline_file(f"{'Host' if server is not None else ''} RenderDoc log", logfile)
+        log.inline_file(f"{'Host' if server is not None else ''} Renderccccc log", logfile)
 
     log.comment(f"total={len(testcases)} fail={len(failedcases)} skip={len(skippedcases)} time={int(duration.total_seconds())}")
     log.header(f"Tests complete summary: {total - len(failedcases)} passed out of {total} run from {len(testcases)} total in {duration}")
@@ -494,13 +494,13 @@ def launch_remote_server():
     # Add parameter to run the remote server itself
     args.append('--internal_remote_server')
 
-    # if we're running from renderdoccmd, invoke it properly
-    if 'renderdoccmd' in sys.executable:
+    # if we're running from renderccccccmd, invoke it properly
+    if 'renderccccccmd' in sys.executable:
         # run_tests.py
-        # --renderdoc
-        # <renderdoc_path>
-        # --pyrenderdoc
-        # <pyrenderdoc_path>
+        # --renderccccc
+        # <renderccccc_path>
+        # --pyrenderccccc
+        # <pyrenderccccc_path>
         del args[1:6]
         args.insert(1, 'test')
         args.insert(2, 'functional')
@@ -560,7 +560,7 @@ def internal_run_test(thread: int, test_name: str):
                 logfile = server.retrieve_latest_test_log(os.path.join(util.get_tmp_dir(), test_name))
 
             if logfile is not None and os.path.exists(logfile):
-                log.inline_file(f"{'Test' if server is not None else ''} RenderDoc log", logfile)
+                log.inline_file(f"{'Test' if server is not None else ''} Renderccccc log", logfile)
 
             log.end_test(test_name, print_footer=False)
 

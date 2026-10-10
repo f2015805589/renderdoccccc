@@ -1,14 +1,14 @@
 Example: Advanced Buffers
 =========================
 
-RenderDoc has a helper in :meth:`~renderdoc.ReplayController.GetCBufferVariableContents` that will both fetch buffer data as well as interpret it into a convenient :class:`~renderdoc.ShaderVariable` representation for analysis.
+Renderccccc has a helper in :meth:`~renderccccc.ReplayController.GetCBufferVariableContents` that will both fetch buffer data as well as interpret it into a convenient :class:`~renderccccc.ShaderVariable` representation for analysis.
 
-When dealing with more complex cases it is always possible to fetch the raw bytes inside a buffer and do all the work of analysis yourself, but it may be helpful to be able to reuse RenderDoc's built-in ability to process buffers into more structured representations.
+When dealing with more complex cases it is always possible to fetch the raw bytes inside a buffer and do all the work of analysis yourself, but it may be helpful to be able to reuse Renderccccc's built-in ability to process buffers into more structured representations.
 
-This example relies on UI-provided helpers in :class:`qrenderdoc.BufferInterpreter`, and so when running outside of the UI much of this would instead need to be done by hand.
+This example relies on UI-provided helpers in :class:`qrenderccccc.BufferInterpreter`, and so when running outside of the UI much of this would instead need to be done by hand.
 
 .. warning::
-    This example is quite involved and dives into complex topics like GPU-side pointers and manual processing of buffers into data. For simpler cases where you want to obtain a value in a constant block you should check if the :meth:`~renderdoc.ReplayController.GetCBufferVariableContents` helper function will give you what you need directly.
+    This example is quite involved and dives into complex topics like GPU-side pointers and manual processing of buffers into data. For simpler cases where you want to obtain a value in a constant block you should check if the :meth:`~renderccccc.ReplayController.GetCBufferVariableContents` helper function will give you what you need directly.
 
 Expected environment
 --------------------
@@ -28,14 +28,14 @@ As noted above, we are assuming more than usual about the capture. First we chec
 .. highlight:: python
 .. code:: python
 
-    action = pyrenderdoc.CurAction()
+    action = pyrenderccccc.CurAction()
 
-    if action.flags & renderdoc.ActionFlags.MeshDispatch:
-        stage = renderdoc.ShaderStage.Mesh
-    elif action.flags & renderdoc.ActionFlags.Drawcall:
-        stage = renderdoc.ShaderStage.Vertex
+    if action.flags & renderccccc.ActionFlags.MeshDispatch:
+        stage = renderccccc.ShaderStage.Mesh
+    elif action.flags & renderccccc.ActionFlags.Drawcall:
+        stage = renderccccc.ShaderStage.Vertex
 
-We now look at the shader reflection and find a suitable constant block. We prefer looking for push constants in vulkan, by selecting buffers with :data:`~renderdoc.ConstantBlock.bufferBacked` and :data:`~renderdoc.ConstantBlock.compileConstants` both being ``False``. If we can't find such a buffer, we will select the smallest constant block otherwise.
+We now look at the shader reflection and find a suitable constant block. We prefer looking for push constants in vulkan, by selecting buffers with :data:`~renderccccc.ConstantBlock.bufferBacked` and :data:`~renderccccc.ConstantBlock.compileConstants` both being ``False``. If we can't find such a buffer, we will select the smallest constant block otherwise.
 
 .. highlight:: python
 .. code:: python
@@ -53,7 +53,7 @@ We now look at the shader reflection and find a suitable constant block. We pref
 
     idx, cb = push_buffers[0]
 
-From here we will use :meth:`~renderdoc.ReplayController.GetCBufferVariableContents` to fetch the contents of the push constant buffer. We could do this by hand using the techniques shown below, but this demonstrates the convenience if that complexity is not needed. We will iterate over each variable and print out its type.
+From here we will use :meth:`~renderccccc.ReplayController.GetCBufferVariableContents` to fetch the contents of the push constant buffer. We could do this by hand using the techniques shown below, but this demonstrates the convenience if that complexity is not needed. We will iterate over each variable and print out its type.
 
 .. highlight:: python
 .. code:: python
@@ -76,43 +76,43 @@ From here we will use :meth:`~renderdoc.ReplayController.GetCBufferVariableConte
         print(f"{v.name} is {str(v.type)}")
 
 .. warning::
-    As in other examples, we are using a blocking :class:`~renderdoc.ReplayController` for simplicity, but for more complex cases you may consider ensuring this call happens on the :ref:`replay thread <pythreading>`!
+    As in other examples, we are using a blocking :class:`~renderccccc.ReplayController` for simplicity, but for more complex cases you may consider ensuring this call happens on the :ref:`replay thread <pythreading>`!
 
 Introspecting pointers
 ----------------------
 
 So far this has not used any advanced methods for decoding buffers and shows how to fetch the contents of a constant buffer directly.
 
-We will now look for any variables that are typed as GPU pointers, and indirect the address given to read the data behind the pointer. Pointer typed variables in RenderDoc provide the type information as best as is given by the reflection data in the shader, but we will also override this with a custom format as sometimes the pointer type declared in the shader's reflection is incomplete and doesn't contain the best information.
+We will now look for any variables that are typed as GPU pointers, and indirect the address given to read the data behind the pointer. Pointer typed variables in Renderccccc provide the type information as best as is given by the reflection data in the shader, but we will also override this with a custom format as sometimes the pointer type declared in the shader's reflection is incomplete and doesn't contain the best information.
 
 Pointer addresses
 -----------------
 
-Whenever we encounter a GPU pointer typed variable (:data:`~renderdoc.VarType.GPUPointer`) we will fetch its pointer value and print whether it is NULL, or the resource location it points to.
+Whenever we encounter a GPU pointer typed variable (:data:`~renderccccc.VarType.GPUPointer`) we will fetch its pointer value and print whether it is NULL, or the resource location it points to.
 
-Fetching the resource from an address can be done by hand - enumerating buffers using :meth:`~renderdoc.ReplayController.GetBuffers` or :meth:`~qrenderdoc.CaptureContext.GetBuffers` and checking the address and size given in :class:`~renderdoc.BufferDescription` to correlate the address. However we can use the helper :class:`~qrenderdoc.BufferInterpreter.LookupPointer` to do that for us, it returns a pair of :class:`~renderdoc.ResourceId` and an ``int`` giving the buffer and the offset into it.
+Fetching the resource from an address can be done by hand - enumerating buffers using :meth:`~renderccccc.ReplayController.GetBuffers` or :meth:`~qrenderccccc.CaptureContext.GetBuffers` and checking the address and size given in :class:`~renderccccc.BufferDescription` to correlate the address. However we can use the helper :class:`~qrenderccccc.BufferInterpreter.LookupPointer` to do that for us, it returns a pair of :class:`~renderccccc.ResourceId` and an ``int`` giving the buffer and the offset into it.
 
 .. highlight:: python
 .. code:: python
 
-    if v.type == renderdoc.VarType.GPUPointer:
+    if v.type == renderccccc.VarType.GPUPointer:
         ptr = v.GetPointer()
 
         if ptr.pointer == 0:
             print("  NULL pointer")
         else:
-            interp = qrenderdoc.BufferInterpreter
+            interp = qrenderccccc.BufferInterpreter
 
             buf, offs = interp.LookupPointer(ptr.pointer)
-            name = pyrenderdoc.GetResourceName(buf)
+            name = pyrenderccccc.GetResourceName(buf)
             print(f"  Pointer to {name}+{offs}")
 
-Based on the reflection information, or the pointer value here, we are given a type for the shader. There is a helper :meth:`~qrenderdoc.BufferInterpreter.GetPointerValType` which we can use to fetch the type description conveniently. This could be used to interpret the contents of the buffer at the pointed-to location.
+Based on the reflection information, or the pointer value here, we are given a type for the shader. There is a helper :meth:`~qrenderccccc.BufferInterpreter.GetPointerValType` which we can use to fetch the type description conveniently. This could be used to interpret the contents of the buffer at the pointed-to location.
 
 .. highlight:: python
 .. code:: python
 
-    pointerConst = renderdoc.ShaderConstant()
+    pointerConst = renderccccc.ShaderConstant()
     pointerConst.name = "Pointer"
     pointerConst.type = interp.GetPointerValType(ptr)
     print(
@@ -124,7 +124,7 @@ Custom buffer formats
 
 Using the same buffer format specifications as used in the UI - see :ref:`how_buffer_format` - we can describe a custom format which may be useful if the reflected type is opaque/lacking, or if we are tracking buffer data in a way that does not have clear shader reflection information.
 
-Calling :meth:`~qrenderdoc.BufferInterpreter.Parse` lets us parse a string and retrieve the structure back. This parsing can produce errors, describe GPU packing rules based on the format. In our case the format is relatively simple so we will just take the described structure for interpreting the buffer data.
+Calling :meth:`~qrenderccccc.BufferInterpreter.Parse` lets us parse a string and retrieve the structure back. This parsing can produce errors, describe GPU packing rules based on the format. In our case the format is relatively simple so we will just take the described structure for interpreting the buffer data.
 
 .. highlight:: python
 .. code:: python
@@ -149,9 +149,9 @@ Calling :meth:`~qrenderdoc.BufferInterpreter.Parse` lets us parse a string and r
 Interpreting data to structure
 ------------------------------
 
-Using the type description we have, and the raw bytes from :meth:`~renderdoc.ReplayController.GetBufferData`, we could hand-process the data as we have all of the offset and type information necessary to do so. With a complex type structure though this would be infeasible, so instead we can use :meth:`~qrenderdoc.BufferInterpreter.GetShaderVariables` to help.
+Using the type description we have, and the raw bytes from :meth:`~renderccccc.ReplayController.GetBufferData`, we could hand-process the data as we have all of the offset and type information necessary to do so. With a complex type structure though this would be infeasible, so instead we can use :meth:`~qrenderccccc.BufferInterpreter.GetShaderVariables` to help.
 
-This function will take a given :class:`~renderdoc.ShaderConstant` and ``bytes`` data and interpret it to as many :class:`~renderdoc.ShaderVariable` as possible. You can specify a maximum number of variables (if you know you have a lot of data and only need a certain number), otherwise it will read as many as will fit into the buffer data.
+This function will take a given :class:`~renderccccc.ShaderConstant` and ``bytes`` data and interpret it to as many :class:`~renderccccc.ShaderVariable` as possible. You can specify a maximum number of variables (if you know you have a lot of data and only need a certain number), otherwise it will read as many as will fit into the buffer data.
 
 .. highlight:: python
 .. code:: python
@@ -160,7 +160,7 @@ This function will take a given :class:`~renderdoc.ShaderConstant` and ``bytes``
 
     ptr_vars = interp.GetShaderVariables(pointerConst, data, 3)
 
-Once we have the variables that the pointer was referring to we can print these out with their contents, as with the original shader variables we obtained from :meth:`~renderdoc.ReplayController.GetCBufferVariableContents`.
+Once we have the variables that the pointer was referring to we can print these out with their contents, as with the original shader variables we obtained from :meth:`~renderccccc.ReplayController.GetCBufferVariableContents`.
 
 This technique can be generalised, as the type information can come from anywhere and similarly the byte data can come from anywhere. You could use this for more complex indirect lookups, e.g. fetching the values of one buffer based on the index found in a different buffer.
 

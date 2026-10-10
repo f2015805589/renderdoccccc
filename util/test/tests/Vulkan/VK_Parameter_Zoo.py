@@ -1,6 +1,6 @@
 from typing import Dict
 
-import renderdoc as rd
+import renderccccc as rd
 import rdtest
 
 
@@ -161,9 +161,9 @@ class VK_Parameter_Zoo(rdtest.TestCase):
         action = self.find_action("Tools available")
 
         assert len(action.children) > 1
-        assert any([d.customName == 'RenderDoc' for d in action.children])
+        assert any([d.customName == 'Renderccccc' for d in action.children])
 
-        rdtest.log.success("RenderDoc tool was listed as available")
+        rdtest.log.success("Renderccccc tool was listed as available")
 
         for variant in [1, 2]:
             action = self.find_action(f"ASM Draw {variant}")

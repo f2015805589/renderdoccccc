@@ -1,5 +1,5 @@
 import rdtest
-import renderdoc as rd
+import renderccccc as rd
 
 
 class VK_Discard_Zoo(rdtest.Discard_Zoo):

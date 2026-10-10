@@ -1,11 +1,11 @@
 from __future__ import annotations
-import renderdoc as rd
-import qrenderdoc as qrd
+import renderccccc as rd
+import qrenderccccc as qrd
 
 from typing import IO, Any, Dict, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    pyrenderdoc = qrd.CaptureContext()
+    pyrenderccccc = qrd.CaptureContext()
 
 importerror = None
 
@@ -41,7 +41,7 @@ class Outputter(IO[str]):
         self.abort = False
 
     def write(self, t: str):
-        ext = pyrenderdoc.Extensions()
+        ext = pyrenderccccc.Extensions()
         mqt = ext.GetMiniQtHelper()
 
         if self.abort:
@@ -56,7 +56,7 @@ class Outputter(IO[str]):
         return 0
 
     def clear(self):
-        ext = pyrenderdoc.Extensions()
+        ext = pyrenderccccc.Extensions()
         mqt = ext.GetMiniQtHelper()
 
         if self.wid is not None:
@@ -78,7 +78,7 @@ class TestRunner(qrd.CaptureViewer):
         super().__init__()
 
     def OnCaptureLoaded(self):
-        ext = pyrenderdoc.Extensions()
+        ext = pyrenderccccc.Extensions()
         self.mqt = ext.GetMiniQtHelper()
 
         if self.test is not None:
@@ -125,8 +125,8 @@ class TestRunner(qrd.CaptureViewer):
 
         rdtest.log.set_context(lambda: self.test.log_context())
 
-        self.test.controller = pyrenderdoc.GetBlockingController()
-        self.test.sdfile = pyrenderdoc.GetStructuredFile()
+        self.test.controller = pyrenderccccc.GetBlockingController()
+        self.test.sdfile = pyrenderccccc.GetStructuredFile()
 
         rdtest.log.begin_test(rdtest.get_current_test_name(), False)
 
@@ -155,14 +155,14 @@ class TestRunner(qrd.CaptureViewer):
                 if isinstance(c, rdtest.HistoryContext):
                     disp = rd.TextureDisplay()
                     disp.typeCast = c.cast
-                    view = pyrenderdoc.ViewPixelHistory(
+                    view = pyrenderccccc.ViewPixelHistory(
                         c.tex, c.x, c.y, c.sub.slice, disp
                     )
                     modifs = self.test.controller.PixelHistory(
                         c.tex, c.x, c.y, c.sub, c.cast
                     )
                     view.SetHistory(modifs)
-                    pyrenderdoc.AddDockWindow(
+                    pyrenderccccc.AddDockWindow(
                         view.Widget(), qrd.DockReference.TransientPopupArea, None
                     )
 
@@ -175,10 +175,10 @@ class TestRunner(qrd.CaptureViewer):
                         outputter.write("Tried to debug with no vertex shader bound")
                     else:
                         pipeline = pipe.GetGraphicsPipelineObject()
-                        view = pyrenderdoc.DebugShader(
+                        view = pyrenderccccc.DebugShader(
                             refl, pipeline, trace, "Failed debug"
                         )
-                        pyrenderdoc.AddDockWindow(
+                        pyrenderccccc.AddDockWindow(
                             view.Widget(), qrd.DockReference.MainToolArea, None
                         )
 
@@ -189,10 +189,10 @@ class TestRunner(qrd.CaptureViewer):
                         outputter.write("Tried to debug with no pixel shader bound")
                     else:
                         pipeline = pipe.GetGraphicsPipelineObject()
-                        view = pyrenderdoc.DebugShader(
+                        view = pyrenderccccc.DebugShader(
                             refl, pipeline, trace, "Failed debug"
                         )
-                        pyrenderdoc.AddDockWindow(
+                        pyrenderccccc.AddDockWindow(
                             view.Widget(), qrd.DockReference.MainToolArea, None
                         )
 
@@ -203,17 +203,17 @@ class TestRunner(qrd.CaptureViewer):
                         outputter.write("Tried to debug with no compute shader bound")
                     else:
                         pipeline = pipe.GetComputePipelineObject()
-                        view = pyrenderdoc.DebugShader(
+                        view = pyrenderccccc.DebugShader(
                             refl, pipeline, trace, "Failed debug"
                         )
-                        pyrenderdoc.AddDockWindow(
+                        pyrenderccccc.AddDockWindow(
                             view.Widget(), qrd.DockReference.MainToolArea, None
                         )
 
             for c in self.test.contexts:
                 if isinstance(c, rdtest.PickContext):
-                    tex = pyrenderdoc.GetTextureViewer()
-                    pyrenderdoc.ShowTextureViewer()
+                    tex = pyrenderccccc.GetTextureViewer()
+                    pyrenderccccc.ShowTextureViewer()
 
                     tex.ViewTexture(c.tex, rd.CompType.Typeless, True)
                     tex.SetSelectedSubresource(c.sub)
@@ -221,7 +221,7 @@ class TestRunner(qrd.CaptureViewer):
 
         rdtest.log.set_context(None)
 
-        pyrenderdoc.InvokeOntoUIThread(
+        pyrenderccccc.InvokeOntoUIThread(
             lambda: self.mqt.SetWidgetEnabled(self.relaunch, True)
             and self.mqt.SetWidgetEnabled(self.abort, False)
         )
@@ -232,8 +232,8 @@ class TestRunner(qrd.CaptureViewer):
 watcher = TestRunner()
 
 
-def run_test(pyrenderdoc: qrd.CaptureContext, widget: qrd.QWidget, data: str):
-    ext = pyrenderdoc.Extensions()
+def run_test(pyrenderccccc: qrd.CaptureContext, widget: qrd.QWidget, data: str):
+    ext = pyrenderccccc.Extensions()
 
     name = rdtest.get_current_test_name()
 
@@ -246,8 +246,8 @@ def run_test(pyrenderdoc: qrd.CaptureContext, widget: qrd.QWidget, data: str):
 
     watcher.test = rdtest.get_current_test()()
 
-    pyrenderdoc.ShowCaptureDialog()
-    dialog = pyrenderdoc.GetCaptureDialog()
+    pyrenderccccc.ShowCaptureDialog()
+    dialog = pyrenderccccc.GetCaptureDialog()
     s = dialog.Settings()
     s.executable = rdtest.get_demos_binary()
     s.commandLine = f"{name} --frames 10"
@@ -257,7 +257,7 @@ def run_test(pyrenderdoc: qrd.CaptureContext, widget: qrd.QWidget, data: str):
     dialog.Launch()
 
 
-def rerun_test(pyrenderdoc: qrd.CaptureContext, widget: qrd.QWidget, data: str):
+def rerun_test(pyrenderccccc: qrd.CaptureContext, widget: qrd.QWidget, data: str):
     rdtest.reload_test(rdtest.get_current_test_name())
 
     watcher.test = rdtest.get_current_test()()
@@ -265,19 +265,19 @@ def rerun_test(pyrenderdoc: qrd.CaptureContext, widget: qrd.QWidget, data: str):
     watcher.run_test()
 
 
-def abort_test(pyrenderdoc: qrd.CaptureContext, widget: qrd.QWidget, data: str):
+def abort_test(pyrenderccccc: qrd.CaptureContext, widget: qrd.QWidget, data: str):
     outputter.abort = True
 
 
-def fast_fail_changed(pyrenderdoc: qrd.CaptureContext, widget: qrd.QWidget, data: str):
-    ext = pyrenderdoc.Extensions()
+def fast_fail_changed(pyrenderccccc: qrd.CaptureContext, widget: qrd.QWidget, data: str):
+    ext = pyrenderccccc.Extensions()
     mqt = ext.GetMiniQtHelper()
 
     rdtest.log.fast_fail = mqt.IsWidgetChecked(widget)
 
 
 def filter_updated(selector: qrd.QWidget, filter: qrd.QWidget):
-    ext = pyrenderdoc.Extensions()
+    ext = pyrenderccccc.Extensions()
     mqt = ext.GetMiniQtHelper()
 
     test_names = sorted([x.__name__ for x in rdtest.get_tests()]) 
@@ -294,8 +294,8 @@ def filter_updated(selector: qrd.QWidget, filter: qrd.QWidget):
     if cur in tests:
         mqt.SelectComboOption(selector, cur)
 
-def harness(pyrenderdoc: qrd.CaptureContext, params: Dict[str, Any]):
-    ext = pyrenderdoc.Extensions()
+def harness(pyrenderccccc: qrd.CaptureContext, params: Dict[str, Any]):
+    ext = pyrenderccccc.Extensions()
     mqt = ext.GetMiniQtHelper()
 
     top = mqt.CreateToplevelWidget("Test Harness")
@@ -354,24 +354,24 @@ def harness(pyrenderdoc: qrd.CaptureContext, params: Dict[str, Any]):
 
     mqt.AddWidget(top, vlayout)
 
-    pyrenderdoc.AddDockWindow(
-        top, qrd.DockReference.RightWindowSide, pyrenderdoc.GetMainWindow().Widget()
+    pyrenderccccc.AddDockWindow(
+        top, qrd.DockReference.RightWindowSide, pyrenderccccc.GetMainWindow().Widget()
     )
 
 
-def register(version: str, pyrenderdoc: qrd.CaptureContext):
-    print(f"Test Harness loaded in RenderDoc {version}")
+def register(version: str, pyrenderccccc: qrd.CaptureContext):
+    print(f"Test Harness loaded in Renderccccc {version}")
 
     # only register the menu etc if we imported the tests project
     if "rdtest" in globals():
-        pyrenderdoc.Extensions().RegisterWindowMenu(
+        pyrenderccccc.Extensions().RegisterWindowMenu(
             qrd.WindowMenu.Tools, ["Test Harness"], harness
         )
 
         rdtest.log.add_output(outputter)
-        rdtest.set_capture_context(pyrenderdoc)
+        rdtest.set_capture_context(pyrenderccccc)
 
-        pyrenderdoc.AddCaptureViewer(watcher)
+        pyrenderccccc.AddCaptureViewer(watcher)
     else:
         print(f"Test import failed: {importerror!s}")
 
@@ -381,4 +381,4 @@ def unregister():
 
     outputter.wid = None
 
-    pyrenderdoc.RemoveCaptureViewer(watcher)
+    pyrenderccccc.RemoveCaptureViewer(watcher)

@@ -3,7 +3,7 @@ from typing import Dict, List, Tuple
 
 import rdtest
 import struct
-import renderdoc as rd
+import renderccccc as rd
 
 def real_action_children(action: rd.ActionDescription):
     return [c for c in action.children if not c.flags & rd.ActionFlags.PopMarker]

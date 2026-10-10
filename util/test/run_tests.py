@@ -5,10 +5,10 @@ import sys
 script_dir = os.path.realpath(os.path.dirname(__file__))
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-r', '--renderdoc',
-                    help="The location of the renderdoc library to use", type=str)
-parser.add_argument('-p', '--pyrenderdoc',
-                    help="The location of the renderdoc python module to use", type=str)
+parser.add_argument('-r', '--renderccccc',
+                    help="The location of the renderccccc library to use", type=str)
+parser.add_argument('-p', '--pyrenderccccc',
+                    help="The location of the renderccccc python module to use", type=str)
 parser.add_argument('-l', '--list',
                     help="Lists the tests available to run", action="store_true")
 parser.add_argument('-t', '--test_include', default=".*",
@@ -45,40 +45,40 @@ parser.add_argument('--internal_remote_server', help=argparse.SUPPRESS, action="
 parser.add_argument('--internal_thread', help=argparse.SUPPRESS, type=int, default=0, required=False)
 args = parser.parse_args()
 
-custom_pyrenderdoc = None
+custom_pyrenderccccc = None
 
-if args.pyrenderdoc is not None:
-    if os.path.isfile(args.pyrenderdoc):
-        custom_pyrenderdoc = os.path.abspath(os.path.dirname(args.pyrenderdoc))
-    elif os.path.isdir(args.pyrenderdoc):
-        custom_pyrenderdoc = os.path.abspath(args.pyrenderdoc)
+if args.pyrenderccccc is not None:
+    if os.path.isfile(args.pyrenderccccc):
+        custom_pyrenderccccc = os.path.abspath(os.path.dirname(args.pyrenderccccc))
+    elif os.path.isdir(args.pyrenderccccc):
+        custom_pyrenderccccc = os.path.abspath(args.pyrenderccccc)
     else:
-        raise RuntimeError(f"'{args.pyrenderdoc}' is not a valid path to the pyrenderdoc module")
+        raise RuntimeError(f"'{args.pyrenderccccc}' is not a valid path to the pyrenderccccc module")
 
-if args.renderdoc is not None:
-    if os.path.isfile(args.renderdoc):
-        renderdoc_dirpath = os.path.abspath(os.path.dirname(args.renderdoc))
-    elif os.path.isdir(args.renderdoc):
-        renderdoc_dirpath = os.path.abspath(args.renderdoc)
+if args.renderccccc is not None:
+    if os.path.isfile(args.renderccccc):
+        renderccccc_dirpath = os.path.abspath(os.path.dirname(args.renderccccc))
+    elif os.path.isdir(args.renderccccc):
+        renderccccc_dirpath = os.path.abspath(args.renderccccc)
     else:
-        raise RuntimeError(f"'{args.renderdoc}' is not a valid path to the renderdoc library")
-    os.environ["PATH"] += os.pathsep + renderdoc_dirpath
+        raise RuntimeError(f"'{args.renderccccc}' is not a valid path to the renderccccc library")
+    os.environ["PATH"] += os.pathsep + renderccccc_dirpath
     # Python 3.8 doesn't search PATH so add it to the DLL search path
     if sys.platform == 'win32' and sys.version_info[1] >= 8:
-        os.add_dll_directory(renderdoc_dirpath)
+        os.add_dll_directory(renderccccc_dirpath)
 
-    # if the user didn't specify a pyrenderdoc but we do have a renderdoc, try the default location as a backup
-    if custom_pyrenderdoc is None:
+    # if the user didn't specify a pyrenderccccc but we do have a renderccccc, try the default location as a backup
+    if custom_pyrenderccccc is None:
         if sys.platform == 'win32':
-            custom_pyrenderdoc = os.path.join(os.path.abspath(args.renderdoc), "pymodules")
+            custom_pyrenderccccc = os.path.join(os.path.abspath(args.renderccccc), "pymodules")
         else:
-            custom_pyrenderdoc = os.path.abspath(args.renderdoc)
+            custom_pyrenderccccc = os.path.abspath(args.renderccccc)
 
-# on windows if we still didn't get a custom_pyrenderdoc and importing fails,
+# on windows if we still didn't get a custom_pyrenderccccc and importing fails,
 # try to just pull in the default build location. Favour development over release
-if sys.platform == "win32" and custom_pyrenderdoc is None:
+if sys.platform == "win32" and custom_pyrenderccccc is None:
     try:
-        import renderdoc as _
+        import renderccccc as _
     except ImportError:
         root = os.path.dirname(os.path.dirname(script_dir))
         import struct
@@ -91,19 +91,19 @@ if sys.platform == "win32" and custom_pyrenderdoc is None:
         rls = os.path.join(root, base, "Release", "pymodules")
 
         if os.path.isdir(dev):
-            custom_pyrenderdoc = dev
+            custom_pyrenderccccc = dev
         elif os.path.isdir(rls):
-            custom_pyrenderdoc = rls
+            custom_pyrenderccccc = rls
 
-        if sys.platform == 'win32' and sys.version_info[1] >= 8 and custom_pyrenderdoc is not None:
-            os.add_dll_directory(os.path.dirname(custom_pyrenderdoc))
+        if sys.platform == 'win32' and sys.version_info[1] >= 8 and custom_pyrenderccccc is not None:
+            os.add_dll_directory(os.path.dirname(custom_pyrenderccccc))
 
-if custom_pyrenderdoc is not None:
+if custom_pyrenderccccc is not None:
     # explicit paths go at the start, implicit paths go at the end
-    if args.pyrenderdoc is not None:
-        sys.path.insert(0, custom_pyrenderdoc)
+    if args.pyrenderccccc is not None:
+        sys.path.insert(0, custom_pyrenderccccc)
     else:
-        sys.path.append(custom_pyrenderdoc)
+        sys.path.append(custom_pyrenderccccc)
 
 sys.path.insert(0, os.path.realpath(os.path.dirname(__file__)))
 
@@ -132,8 +132,8 @@ except (ModuleNotFoundError, ImportError) as ex:
     with open(os.path.join(artifacts_dir, 'output.log.html'), "w") as f:
         f.write(f"<body><h1>Failed to import rdtest: {ex}</h1></body>")
 
-    print("Couldn't import renderdoc module. Try specifying path to python module with --pyrenderdoc " +
-          "or the path to the native library with --renderdoc")
+    print("Couldn't import renderccccc module. Try specifying path to python module with --pyrenderccccc " +
+          "or the path to the native library with --renderccccc")
     print(ex)
 
     sys.exit(1)

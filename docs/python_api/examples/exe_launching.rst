@@ -11,10 +11,10 @@ After showing and getting the capture dialog handle, we can directly set things 
 .. highlight:: python
 .. code:: python
 
-    pyrenderdoc.ShowCaptureDialog()
-    dialog = pyrenderdoc.GetCaptureDialog()
+    pyrenderccccc.ShowCaptureDialog()
+    dialog = pyrenderccccc.GetCaptureDialog()
 
-    exe = pyrenderdoc.Extensions().OpenFileName("Find an executable", "", "*.exe")
+    exe = pyrenderccccc.Extensions().OpenFileName("Find an executable", "", "*.exe")
 
     dialog.SetExecutableFilename(exe)
 
@@ -31,7 +31,7 @@ For setting more specific functionality, we can grab the whole set of settings. 
     print(settings.commandLine)
 
     # reset anything the user has changed to default
-    settings.options = renderdoc.CaptureOptions()
+    settings.options = renderccccc.CaptureOptions()
 
     # enable callstack capture
     settings.options.captureCallstacks = True
@@ -46,10 +46,10 @@ Once we have set the configuration, we double-check with the user - this is opti
 .. highlight:: python
 .. code:: python
 
-    opts = [qrenderdoc.DialogButton.Yes, qrenderdoc.DialogButton.No]
-    go = pyrenderdoc.Extensions().QuestionDialog("Ready to Launch?", opts, "Final Check")
+    opts = [qrenderccccc.DialogButton.Yes, qrenderccccc.DialogButton.No]
+    go = pyrenderccccc.Extensions().QuestionDialog("Ready to Launch?", opts, "Final Check")
 
-    if go == qrenderdoc.DialogButton.Yes:
+    if go == qrenderccccc.DialogButton.Yes:
         conn = dialog.Launch()
 
 Capture connection
@@ -59,7 +59,7 @@ If the program has successfully launched, we will be returned a handle to the ca
 
 .. warning::
 
-    Capture connection windows are temporary and may close themselves if the program exits after not making any captures - at this point the connection handle we hold will no longer be valid. You should either register a callback to be invoked when the connection closes itself with :meth:`~qrenderdoc.CaptureConnection.RegisterClosedCallback`, or prevent this auto-closing with :meth:`~qrenderdoc.CaptureConnection.PreventAutoClose`.
+    Capture connection windows are temporary and may close themselves if the program exits after not making any captures - at this point the connection handle we hold will no longer be valid. You should either register a callback to be invoked when the connection closes itself with :meth:`~qrenderccccc.CaptureConnection.RegisterClosedCallback`, or prevent this auto-closing with :meth:`~qrenderccccc.CaptureConnection.PreventAutoClose`.
 
 With this connection it is possible to control the capture and opening of captures, which is outside the scope of this example. We will take a very simple extra step, having a callback after 5 seconds which prints the connected program and the active graphics APIs that have been initialised.
 
@@ -76,7 +76,7 @@ With this connection it is possible to control the capture and opening of captur
             print(f"{numcaps} captures have been made!")
 
     # wait a little bit, then call our callback to print the connection status
-    pyrenderdoc.DelayedCallback(5000, connected_cb)
+    pyrenderccccc.DelayedCallback(5000, connected_cb)
 
 Example Source
 --------------

@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Tuple
 
 import rdtest
-import renderdoc as rd
+import renderccccc as rd
 
 
 class D3D12_Descriptor_Indexing(rdtest.TestCase):

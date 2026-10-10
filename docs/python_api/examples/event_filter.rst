@@ -17,8 +17,8 @@ In this example, we unconditionally unregister the filter first to ensure that t
 .. highlight:: python
 .. code:: python
     
-    pyrenderdoc.GetEventBrowser().UnregisterEventFilterFunction("prime")
-    pyrenderdoc.GetEventBrowser().RegisterEventFilterFunction(
+    pyrenderccccc.GetEventBrowser().UnregisterEventFilterFunction("prime")
+    pyrenderccccc.GetEventBrowser().RegisterEventFilterFunction(
         "prime",
         "Show only events with prime EIDs.",
         filter_func,
@@ -31,9 +31,9 @@ We provide three callback functions, one for doing the actual filtering, one for
 Filtering
 ---------
 
-The filter function is called once for each candidate event and returns a ``bool`` indicating whether this event should be included or excluded. The function is passed a few parameters directly for the event which are useful. You are given the :class:`~qrenderdoc.CaptureContext` again for any queries needed, as well as the name of your filter (in case you have a multi-dispatch function) and the parameters passed.
+The filter function is called once for each candidate event and returns a ``bool`` indicating whether this event should be included or excluded. The function is passed a few parameters directly for the event which are useful. You are given the :class:`~qrenderccccc.CaptureContext` again for any queries needed, as well as the name of your filter (in case you have a multi-dispatch function) and the parameters passed.
 
-Per event you are also given the :ref:`event ID <eventids>`, the :class:`~renderdoc.SDChunk` for looking up :ref:`API parameters <apiparams>`, the :class:`~renderdoc.ActionDescription` for actions (or ``None`` if the event is not an action), and a string  name that is shown in the event browser.
+Per event you are also given the :ref:`event ID <eventids>`, the :class:`~renderccccc.SDChunk` for looking up :ref:`API parameters <apiparams>`, the :class:`~renderccccc.ActionDescription` for actions (or ``None`` if the event is not an action), and a string  name that is shown in the event browser.
 
 Our extremely useful filter function just checks to see if the EID is prime or not.
 
@@ -46,12 +46,12 @@ Our extremely useful filter function just checks to see if the EID is prime or n
         return len([x for x in range(1, n + 1) if (n / x) == (n // x)]) == 2
 
     def filter_func(
-        ctx: qrenderdoc.CaptureContext,
+        ctx: qrenderccccc.CaptureContext,
         filter: str,
         params: str,
         eventId: int,
-        chunk: renderdoc.SDChunk,
-        action: renderdoc.ActionDescription,
+        chunk: renderccccc.SDChunk,
+        action: renderccccc.ActionDescription,
         eventName: str,
     ):
         return isprime(eventId)
@@ -74,7 +74,7 @@ In our case we simply look for the string 'error' and disallow that.
 .. highlight:: python
 .. code:: python
    
-    def parser_func(ctx: qrenderdoc.CaptureContext, filter: str, params: str):
+    def parser_func(ctx: qrenderccccc.CaptureContext, filter: str, params: str):
         if "error" in params:
             return f"You shouldn't put 'error' in ${filter}()"
         return ""
@@ -95,7 +95,7 @@ In our example we just return a fixed set of strings, including an error string 
 .. highlight:: python
 .. code:: python
         
-    def completer_func(ctx: qrenderdoc.CaptureContext, filter: str, params: str):
+    def completer_func(ctx: qrenderccccc.CaptureContext, filter: str, params: str):
         return ["foo", "bar", "error"]
 
 .. figure:: ../../imgs/python/FilterComplete.png

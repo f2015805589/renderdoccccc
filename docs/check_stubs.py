@@ -26,7 +26,7 @@ else:
 sys.path.insert(0, os.path.abspath(binpath + "/Development/pymodules"))
 sys.path.insert(0, os.path.abspath(binpath + "/Release/pymodules"))
 
-# Add the build paths to PATH so renderdoc.dll can be located
+# Add the build paths to PATH so renderccccc.dll can be located
 os.environ["PATH"] += os.pathsep + os.path.abspath(binpath + "/Development/")
 os.environ["PATH"] += os.pathsep + os.path.abspath(binpath + "/Release/")
 
@@ -43,8 +43,8 @@ import shutil
 
 shutil.rmtree(destpath)
 
-import renderdoc as rd_module
-import qrenderdoc as qrd_module
+import renderccccc as rd_module
+import qrenderccccc as qrd_module
 import stubgen
 
 stubgen.gen(rd_module, destpath)
@@ -52,8 +52,8 @@ stubgen.gen(qrd_module, destpath)
 
 sys.path.insert(0, os.path.dirname(destpath))
 
-from rdstubs import renderdoc as rd_stub  # type: ignore
-from rdstubs import qrenderdoc as qrd_stub  # type: ignore
+from rdstubs import renderccccc as rd_stub  # type: ignore
+from rdstubs import qrenderccccc as qrd_stub  # type: ignore
 
 import inspect, enum
 

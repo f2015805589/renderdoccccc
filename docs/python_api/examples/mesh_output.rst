@@ -1,7 +1,7 @@
 Example: Mesh Output
 ====================
 
-RenderDoc is able to fetch and display the mesh output data at each shader stage, in the :doc:`../../window/mesh_viewer`. This data can also be queried and decoded in python, as we will show in this example.
+Renderccccc is able to fetch and display the mesh output data at each shader stage, in the :doc:`../../window/mesh_viewer`. This data can also be queried and decoded in python, as we will show in this example.
 
 It is worth noting that although this is written from the perspective of decoding the output data from mesh stages, a large amount of this applies equally to decoding general buffer data with a known format.
 
@@ -18,18 +18,18 @@ Unlike other examples, we will fail to run if a capture is not loaded or a suita
 .. highlight:: python
 .. code:: python
 
-    pipe = pyrenderdoc.CurPipelineState()
+    pipe = pyrenderccccc.CurPipelineState()
 
     avoid_stages = [
-        renderdoc.ShaderStage.Mesh,
-        renderdoc.ShaderStage.Geometry,
-        renderdoc.ShaderStage.Hull,
+        renderccccc.ShaderStage.Mesh,
+        renderccccc.ShaderStage.Geometry,
+        renderccccc.ShaderStage.Hull,
     ]
 
-    if any([pipe.GetShader(x) != renderdoc.ResourceId() for x in avoid_stages]):
+    if any([pipe.GetShader(x) != renderccccc.ResourceId() for x in avoid_stages]):
         raise RuntimeError("Can't run example on this draw")
 
-    refl = pipe.GetShaderReflection(renderdoc.ShaderStage.Vertex)
+    refl = pipe.GetShaderReflection(renderccccc.ShaderStage.Vertex)
 
     if refl is None:
         raise RuntimeError("Can't run example on this draw")
@@ -37,29 +37,29 @@ Unlike other examples, we will fail to run if a capture is not loaded or a suita
 Retrieving mesh output data
 ---------------------------
 
-Internally RenderDoc refers to any general data fetched from any stage as "Post VS" data. Fetching this is fairly simple via a call to :meth:`~renderdoc.ReplayController.GetPostVSData` for a given stage and for a given instance and multiview.
+Internally Renderccccc refers to any general data fetched from any stage as "Post VS" data. Fetching this is fairly simple via a call to :meth:`~renderccccc.ReplayController.GetPostVSData` for a given stage and for a given instance and multiview.
 
 Post VS data is cached per-event unless something causes the cache to be invalidated like shader editing. If you have the mesh viewer open in the UI then the data is already being cached whenever an event is selected.
 
 .. warning::
     As in other cases, this can take some time depending on if the cache is warm or not so it is best to consider ensuring this call happens on the :ref:`replay thread <pythreading>`!
 
-This function returns a :class:`~renderdoc.MeshFormat` which details the properties of the returned data in an optional index buffer and vertex buffer. The index buffer is *not* necessarily the same as any index buffer used in the draw, and is not interchangeable. The buffer resources referred to are internal and will not match the IDs returned for any buffer in the capture itself.
+This function returns a :class:`~renderccccc.MeshFormat` which details the properties of the returned data in an optional index buffer and vertex buffer. The index buffer is *not* necessarily the same as any index buffer used in the draw, and is not interchangeable. The buffer resources referred to are internal and will not match the IDs returned for any buffer in the capture itself.
 
 .. highlight:: python
 .. code:: python
 
-    controller = pyrenderdoc.GetBlockingController()
+    controller = pyrenderccccc.GetBlockingController()
 
-    meshdata = controller.GetPostVSData(0, 0, renderdoc.MeshDataStage.VSOut)
+    meshdata = controller.GetPostVSData(0, 0, renderccccc.MeshDataStage.VSOut)
 
-The :class:`~renderdoc.MeshFormat` also contains information about the size of the draw and its topology, in case this stage is not outputting triangles to the rasterizer. For stages that do rasterize their output RenderDoc estimates the projection matrix's near plane and far plane which can be used to display the unprojected mesh data.
+The :class:`~renderccccc.MeshFormat` also contains information about the size of the draw and its topology, in case this stage is not outputting triangles to the rasterizer. For stages that do rasterize their output Renderccccc estimates the projection matrix's near plane and far plane which can be used to display the unprojected mesh data.
 
 .. highlight:: python
 .. code:: python
 
     print(f"Mesh data contains {meshdata.numIndices} indices in {str(meshdata.topology)}")
-    if meshdata.indexResourceId != renderdoc.ResourceId():
+    if meshdata.indexResourceId != renderccccc.ResourceId():
         print("         (indexed)")
     else:
         print("         (non-indexed)")
@@ -69,15 +69,15 @@ The :class:`~renderdoc.MeshFormat` also contains information about the size of t
 Fetching indices
 ----------------
 
-To decode the provided vertex data we first set up a list of indices. If there is an index buffer we can fetch its buffer contents with :meth:`~renderdoc.ReplayController.GetBufferData` and decode using ``struct.unpack``. If there's no index buffer it's simple and we can generate a list of integers ourselves.
+To decode the provided vertex data we first set up a list of indices. If there is an index buffer we can fetch its buffer contents with :meth:`~renderccccc.ReplayController.GetBufferData` and decode using ``struct.unpack``. If there's no index buffer it's simple and we can generate a list of integers ourselves.
 
-The details of unpacking formats are available in the `python documentation <https://docs.python.org/3/library/struct.html>`_, but we only need to handle a couple of different possible index byte sizes as determined by :data:`~renderdoc.MeshFormat.indexByteStride`.
+The details of unpacking formats are available in the `python documentation <https://docs.python.org/3/library/struct.html>`_, but we only need to handle a couple of different possible index byte sizes as determined by :data:`~renderccccc.MeshFormat.indexByteStride`.
 
 .. highlight:: python
 .. code:: python
 
     idxs = [i for i in range(meshdata.numIndices)]
-    if meshdata.indexResourceId != renderdoc.ResourceId():
+    if meshdata.indexResourceId != renderccccc.ResourceId():
         bufdata = controller.GetBufferData(
             meshdata.indexResourceId, meshdata.indexByteOffset, meshdata.indexByteSize
         )
@@ -92,9 +92,9 @@ The details of unpacking formats are available in the `python documentation <htt
 Fetching vertex data
 --------------------
 
-The new vertex buffer generated by RenderDoc will have a format closely following the :data:`~renderdoc.ShaderReflection.outputSignature` from the reflection data of the stage that output it - in our case the vertex shader.
+The new vertex buffer generated by Renderccccc will have a format closely following the :data:`~renderccccc.ShaderReflection.outputSignature` from the reflection data of the stage that output it - in our case the vertex shader.
 
-As a general rule, the output data follows a specific format - each vertex is separated by a stride of :data:`~renderdoc.MeshFormat.vertexByteStride` bytes and starts at :data:`~renderdoc.MeshFormat.vertexByteOffset` in the vertex buffer. The vertex data is made up of the reflection's output signature elements, including any builtin outputs.
+As a general rule, the output data follows a specific format - each vertex is separated by a stride of :data:`~renderccccc.MeshFormat.vertexByteStride` bytes and starts at :data:`~renderccccc.MeshFormat.vertexByteOffset` in the vertex buffer. The vertex data is made up of the reflection's output signature elements, including any builtin outputs.
 
 We will iterate over up to 4 triangles, and in each triangle process each index. For each index we use it to calculate the offset in the vertex buffer and fetch the data for the whole vertex:
 
@@ -117,13 +117,13 @@ Decoding vertex data
 
 We can now decode the vertex data according to the expected layout, but there are two important points to note:
 
-#. For shaders that are the last stage before the rasterizer and output to the builtin position (:data:`~renderdoc.ShaderBuiltin.Position`) this position data is always output first in the vertex data, before every other element in order.
+#. For shaders that are the last stage before the rasterizer and output to the builtin position (:data:`~renderccccc.ShaderBuiltin.Position`) this position data is always output first in the vertex data, before every other element in order.
 
-   This re-ordering is done by RenderDoc so that the mesh data returned by :meth:`~renderdoc.ReplayController.GetPostVSData` immediately describes the position data. In many cases there is no re-ordering as position is often the first declared output anyway.
+   This re-ordering is done by Renderccccc so that the mesh data returned by :meth:`~renderccccc.ReplayController.GetPostVSData` immediately describes the position data. In many cases there is no re-ordering as position is often the first declared output anyway.
 
 #. By default all data is tightly packed without respect for alignment. However on some APIs and shader stages, each element will be aligned up according to 'traditional' conservative padding: with vector elements aligned so they do not cross a 16-byte boundary.
 
-   This can be queried with :meth:`~renderdoc.PipeState.HasAlignedPostVSData`.
+   This can be queried with :meth:`~renderccccc.PipeState.HasAlignedPostVSData`.
 
 In our example we will handle both of these for demonstration, though you may find in your capture that one or both is redundant.
 
@@ -133,7 +133,7 @@ First we identify the position output. Since we know that this draw only uses a 
 .. code:: python
 
     posidx = [
-        o.systemValue == renderdoc.ShaderBuiltin.Position
+        o.systemValue == renderccccc.ShaderBuiltin.Position
         for o in refl.outputSignature
     ].index(True)
     if posidx >= 0:
@@ -153,11 +153,11 @@ Before each element we check if we need to align upwards for the new element's d
 
     for output in refl.outputSignature:
         # position was handled above, so skip it here
-        if output.systemValue == renderdoc.ShaderBuiltin.Position:
+        if output.systemValue == renderccccc.ShaderBuiltin.Position:
             continue
 
-        if pipe.HasAlignedPostVSData(renderdoc.MeshDataStage.VSOut):
-            align = max(4, renderdoc.VarTypeByteSize(output.varType))
+        if pipe.HasAlignedPostVSData(renderccccc.MeshDataStage.VSOut):
+            align = max(4, renderccccc.VarTypeByteSize(output.varType))
             if output.compCount == 3:
                 align *= 4
             else:
@@ -168,7 +168,7 @@ Before each element we check if we need to align upwards for the new element's d
 
         data_offs = offset
 
-        offset += output.compCount * renderdoc.VarTypeByteSize(output.varType)
+        offset += output.compCount * renderccccc.VarTypeByteSize(output.varType)
 
 Once we know where the data appears, we can decode it. For simplicity we will only handle 32-bit integer and floating point data, which covers most common types as this includes vectors.
 
@@ -176,11 +176,11 @@ Once we know where the data appears, we can decode it. For simplicity we will on
 .. code:: python
 
     fmtchar = ""
-    if output.varType == renderdoc.VarType.Float:
+    if output.varType == renderccccc.VarType.Float:
         fmtchar = "f"
-    elif output.varType == renderdoc.VarType.UInt:
+    elif output.varType == renderccccc.VarType.UInt:
         fmtchar = "I"
-    elif output.varType == renderdoc.VarType.SInt:
+    elif output.varType == renderccccc.VarType.SInt:
         fmtchar = "i"
     if fmtchar != "":
         fmt = f"={output.compCount}{fmtchar}"

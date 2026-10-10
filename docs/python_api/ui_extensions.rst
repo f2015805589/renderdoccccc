@@ -6,7 +6,7 @@ This document outlines how to get started writing a UI extension.
 Creating an extension
 ---------------------
 
-RenderDoc UI extensions are python modules loaded from standard locations on disk, depending on your platform. On Windows it's :file:`%APPDATA%\\qrenderdoc\\extensions` and on linux it's ``~/.local/share/qrenderdoc/extensions``.
+Renderccccc UI extensions are python modules loaded from standard locations on disk, depending on your platform. On Windows it's :file:`%APPDATA%\\qrenderccccc\\extensions` and on linux it's ``~/.local/share/qrenderccccc/extensions``.
 
 In any subdirectory under this path you can register an extension by creating a ``extension.json`` file with some metadata, and creating a python module starting with an ``__init__.py`` file.
 
@@ -14,7 +14,7 @@ In any subdirectory under this path you can register an extension by creating a 
 
 	Extension Manager: Configures installed extensions.
 
-To streamline setup we will ask RenderDoc to create a new extension for us. Open the python scripting window from :guilabel:`Window` → :guilabel:`Python Scripting`. Then either double click the :guilabel:`Create New...` item under the :guilabel:`UI Extensions` section, or right click on the section title and select the option from the context menu.
+To streamline setup we will ask Renderccccc to create a new extension for us. Open the python scripting window from :guilabel:`Window` → :guilabel:`Python Scripting`. Then either double click the :guilabel:`Create New...` item under the :guilabel:`UI Extensions` section, or right click on the section title and select the option from the context menu.
 
 From the dialog that appears enter a package name such as ``tutorialext``. This will create the ``extension.json`` and ``__init__.py`` files in a new folder ``tutorialext`` for us.
 
@@ -41,11 +41,11 @@ We will add a UI button and new panel to demonstrate how UI extensions can provi
 .. highlight:: python
 .. literalinclude:: ui_extensions.py
 
-If you edit the ``__init__.py`` you'll find that the RenderDoc status bar will notify you that as well as having one extension currently loaded the files have been changed on disk. Clicking the button in the status bar will reload the extension:
+If you edit the ``__init__.py`` you'll find that the Renderccccc status bar will notify you that as well as having one extension currently loaded the files have been changed on disk. Clicking the button in the status bar will reload the extension:
 
 .. figure:: ../imgs/Screenshots/PythonExtensionModified.png
 
-	The RenderDoc status bar with a modified extension loaded
+	The Renderccccc status bar with a modified extension loaded
 
 .. |plugin| image:: ../imgs/icons/plugin.png
 
@@ -60,23 +60,23 @@ Breaking it down
 
 This example demonstrates how you can bridge the gap between python scripts and UI elements. It shows how to add a menu item to one of the main interfaces - the event browser - and how to create a new UI panel with custom interactivity.
 
-When our extension is loaded (or reloaded) the ``register()`` function we define is called with two parameters, the version of RenderDoc as a string e.g. ``"1.23"`` and the :class:`~qrenderdoc.CaptureContext` which is also available as a global ``pyrenderdoc``.
+When our extension is loaded (or reloaded) the ``register()`` function we define is called with two parameters, the version of Renderccccc as a string e.g. ``"1.23"`` and the :class:`~qrenderccccc.CaptureContext` which is also available as a global ``pyrenderccccc``.
 
-From the :class:`~qrenderdoc.CaptureContext` at ``pyrenderdoc`` that we used in the previous example, we can get access to :class:`~qrenderdoc.ExtensionManager` which gives us the option to create a UI. First we register a menu item (:meth:`~qrenderdoc.ExtensionManager.RegisterPanelMenu`) in the event browser's toolbar, providing a list of submenus and a callback to call when it is pressed.
+From the :class:`~qrenderccccc.CaptureContext` at ``pyrenderccccc`` that we used in the previous example, we can get access to :class:`~qrenderccccc.ExtensionManager` which gives us the option to create a UI. First we register a menu item (:meth:`~qrenderccccc.ExtensionManager.RegisterPanelMenu`) in the event browser's toolbar, providing a list of submenus and a callback to call when it is pressed.
 
 .. tip::
 
 	There are multiple places where you can add a new menu item, explore the available enum values and functions here to see what options there are!
 
-When the ``open_window`` callback is called, we create a new window using the :doc:`UI helpers <in_depth/miniqt>` in :class:`~qrenderdoc.MiniQtHelper`. Note that most RenderDoc builds ship with fully integrated python Qt access via PySide, but the full Qt API is quite complex and not necessary for simple quick UIs.
+When the ``open_window`` callback is called, we create a new window using the :doc:`UI helpers <in_depth/miniqt>` in :class:`~qrenderccccc.MiniQtHelper`. Note that most Renderccccc builds ship with fully integrated python Qt access via PySide, but the full Qt API is quite complex and not necessary for simple quick UIs.
 
-For the UI we create a groupbox with a label and a button. When the button is pressed, it updates the label based on where the :ref:`current event <currentevent>` is relative to the largest drawcall found in the capture. This is all contained within a top-level widget (:meth:`~qrenderdoc.MiniQtHelper.CreateToplevelWidget`)
+For the UI we create a groupbox with a label and a button. When the button is pressed, it updates the label based on where the :ref:`current event <currentevent>` is relative to the largest drawcall found in the capture. This is all contained within a top-level widget (:meth:`~qrenderccccc.MiniQtHelper.CreateToplevelWidget`)
 
-Finally we use :meth:`~qrenderdoc.CaptureContext.AddDockWindow` to add the top-level widget into RenderDoc's docking system. Any widget can be added as a new top-level docking panel, but it is recommended that you use an explicit top-level widget to be able to use its callback when it is closed.
+Finally we use :meth:`~qrenderccccc.CaptureContext.AddDockWindow` to add the top-level widget into Renderccccc's docking system. Any widget can be added as a new top-level docking panel, but it is recommended that you use an explicit top-level widget to be able to use its callback when it is closed.
 
 Next steps
 ----------
 
 This shows how to expose user-visible tools to connect through to custom scripts which can be of varying complexity. At this point you hopefully have the starting point to begin exploring APIs available in the documentation or through autocomplete.
 
-Up until now we have written everything within the RenderDoc UI to get started quickly. This is fine for writing small snippets of code, but we can also set up an external IDE for a better experience when writing larger or more complex extensions.
+Up until now we have written everything within the Renderccccc UI to get started quickly. This is fine for writing small snippets of code, but we can also set up an external IDE for a better experience when writing larger or more complex extensions.

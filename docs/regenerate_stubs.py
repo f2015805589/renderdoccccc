@@ -36,7 +36,7 @@ else:
 sys.path.insert(0, os.path.abspath(binpath + "/Development/pymodules"))
 sys.path.insert(0, os.path.abspath(binpath + "/Release/pymodules"))
 
-# Add the build paths to PATH so renderdoc.dll can be located
+# Add the build paths to PATH so renderccccc.dll can be located
 os.environ["PATH"] += os.pathsep + os.path.abspath(binpath + "/Development/")
 os.environ["PATH"] += os.pathsep + os.path.abspath(binpath + "/Release/")
 
@@ -49,9 +49,9 @@ if sys.platform == "win32" and sys.version_info[1] >= 8:
 # path to module libraries for linux
 sys.path.insert(0, os.path.abspath(os.path.join(docsdir, "../build/lib")))
 
-import renderdoc
-import qrenderdoc
+import renderccccc
+import qrenderccccc
 import stubgen
 
-stubgen.gen(renderdoc, destpath, verbose=args.verbose)
-stubgen.gen(qrenderdoc, destpath, verbose=args.verbose)
+stubgen.gen(renderccccc, destpath, verbose=args.verbose)
+stubgen.gen(qrenderccccc, destpath, verbose=args.verbose)

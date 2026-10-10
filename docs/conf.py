@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# RenderDoc documentation build configuration file, created by
+# Renderccccc documentation build configuration file, created by
 # sphinx-quickstart on Thu May 12 16:59:09 2016.
 #
 # This file is execfile()d with the current directory set to its
@@ -36,7 +36,7 @@ else:
 sys.path.insert(0, os.path.abspath(binpath + 'Development/pymodules'))
 sys.path.insert(0, os.path.abspath(binpath + 'Release/pymodules'))
 
-# Add the build paths to PATH so renderdoc.dll can be located
+# Add the build paths to PATH so renderccccc.dll can be located
 os.environ["PATH"] += os.pathsep + os.path.abspath(binpath + 'Development/')
 os.environ["PATH"] += os.pathsep + os.path.abspath(binpath + 'Release/')
 
@@ -91,7 +91,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'RenderDoc'
+project = 'Renderccccc'
 copyright = '{0}, Baldur Karlsson'.format(datetime.date.today().year)
 author = 'Baldur Karlsson'
 
@@ -104,11 +104,11 @@ author = 'Baldur Karlsson'
 major_version = 123
 minor_version = 999
 
-with open('../renderdoc/api/replay/version.h') as f:
+with open('../renderccccc/api/replay/version.h') as f:
     for line in f:
-        if line.find('#define RENDERDOC_VERSION_MAJOR') >= 0:
+        if line.find('#define RENDERCCCCC_VERSION_MAJOR') >= 0:
             major_version = line.split()[2]
-        if line.find('#define RENDERDOC_VERSION_MINOR') >= 0:
+        if line.find('#define RENDERCCCCC_VERSION_MINOR') >= 0:
             minor_version = line.split()[2]
 
 version = '{0}.{1}'.format(major_version, minor_version)
@@ -209,7 +209,7 @@ html_theme = 'alabaster'
 
 # The name for this set of Sphinx documents.
 # "<project> v<release> documentation" by default.
-html_title = 'RenderDoc documentation'
+html_title = 'Renderccccc documentation'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None
@@ -291,7 +291,7 @@ html_domain_indices = False
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'renderdoc'
+htmlhelp_basename = 'renderccccc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -313,7 +313,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'RenderDoc.tex', 'RenderDoc Documentation',
+    (master_doc, 'Renderccccc.tex', 'Renderccccc Documentation',
      'Baldur Karlsson', 'manual'),
 ]
 
@@ -343,7 +343,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'renderdoc', 'RenderDoc Documentation',
+    (master_doc, 'renderccccc', 'Renderccccc Documentation',
      [author], 1)
 ]
 
@@ -357,8 +357,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'RenderDoc', 'RenderDoc Documentation',
-     author, 'RenderDoc', 'One line description of project.',
+    (master_doc, 'Renderccccc', 'Renderccccc Documentation',
+     author, 'Renderccccc', 'One line description of project.',
      'Miscellaneous'),
 ]
 
@@ -386,7 +386,7 @@ html_context = {
     'html_show_sourcelink': False,
     'display_github': True,
     'github_user': 'baldurk',
-    'github_repo': 'renderdoc',
+    'github_repo': 'renderccccc',
     'github_version': 'v{0}'.format(version),
     'conf_py_path': '/docs/',
 }
@@ -457,8 +457,8 @@ def maybe_skip_member(app, what, name, obj, skip, options):
     return None
 
 def build_finished(app, exception):
-    import renderdoc as rd
-    import qrenderdoc as qrd
+    import renderccccc as rd
+    import qrenderccccc as qrd
 
     from sphinx.domains.python import PythonDomain
     from sphinx.errors import SphinxError
@@ -478,7 +478,7 @@ def build_finished(app, exception):
 
     # Enumerate the namespaced objects in both modules
     items = []
-    for module_name in ['renderdoc', 'qrenderdoc']:
+    for module_name in ['renderccccc', 'qrenderccccc']:
         module = sys.modules[module_name]
         entries = dir(module)
         for item in dir(module):

@@ -1,43 +1,43 @@
 # these imports are not strictly necessary, but are convenient
-import renderdoc
-import qrenderdoc
+import renderccccc
+import qrenderccccc
 
 # this is here to give autocomplete when editing the example
 # in VS Code where it doesn't know about this global
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    pyrenderdoc = qrenderdoc.CaptureContext()
+    pyrenderccccc = qrenderccccc.CaptureContext()
 
-if not pyrenderdoc.IsCaptureLoaded():
+if not pyrenderccccc.IsCaptureLoaded():
     raise RuntimeError("Run example with capture open and a vertex draw selected")
 
 import struct
 from typing import List, cast
 
 # verify the current drawcall
-pipe = pyrenderdoc.CurPipelineState()
+pipe = pyrenderccccc.CurPipelineState()
 
 avoid_stages = [
-    renderdoc.ShaderStage.Mesh,
-    renderdoc.ShaderStage.Geometry,
-    renderdoc.ShaderStage.Hull,
+    renderccccc.ShaderStage.Mesh,
+    renderccccc.ShaderStage.Geometry,
+    renderccccc.ShaderStage.Hull,
 ]
 
-if any([pipe.GetShader(x) != renderdoc.ResourceId() for x in avoid_stages]):
+if any([pipe.GetShader(x) != renderccccc.ResourceId() for x in avoid_stages]):
     raise RuntimeError("Can't run example on this draw")
 
-refl = pipe.GetShaderReflection(renderdoc.ShaderStage.Vertex)
+refl = pipe.GetShaderReflection(renderccccc.ShaderStage.Vertex)
 
 if refl is None:
     raise RuntimeError("Can't run example on this draw")
 
-controller = pyrenderdoc.GetBlockingController()
+controller = pyrenderccccc.GetBlockingController()
 
-meshdata = controller.GetPostVSData(0, 0, renderdoc.MeshDataStage.VSOut)
+meshdata = controller.GetPostVSData(0, 0, renderccccc.MeshDataStage.VSOut)
 
 print(f"Mesh data contains {meshdata.numIndices} indices in {str(meshdata.topology)}")
-if meshdata.indexResourceId != renderdoc.ResourceId():
+if meshdata.indexResourceId != renderccccc.ResourceId():
     print("         (indexed)")
 else:
     print("         (non-indexed)")
@@ -49,7 +49,7 @@ if meshdata.unproject:
 
 # default to just indices, but if this does use an index buffer then fetch that data
 idxs = [i for i in range(meshdata.numIndices)]
-if meshdata.indexResourceId != renderdoc.ResourceId():
+if meshdata.indexResourceId != renderccccc.ResourceId():
     bufdata = controller.GetBufferData(
         meshdata.indexResourceId, meshdata.indexByteOffset, meshdata.indexByteSize
     )
@@ -94,11 +94,11 @@ for tri in range(min(4, meshdata.numIndices // 3)):
 
         offset = 0
 
-        # RenderDoc always outputs the position at the beginning of the vertex
+        # Renderccccc always outputs the position at the beginning of the vertex
         # data, so that the mesh data can be re-used for rendering without needing
         # any offsets.
         posidx = [
-            o.systemValue == renderdoc.ShaderBuiltin.Position
+            o.systemValue == renderccccc.ShaderBuiltin.Position
             for o in refl.outputSignature
         ].index(True)
         if posidx >= 0:
@@ -113,14 +113,14 @@ for tri in range(min(4, meshdata.numIndices // 3)):
 
         for output in refl.outputSignature:
             # position was handled above, so skip it here
-            if output.systemValue == renderdoc.ShaderBuiltin.Position:
+            if output.systemValue == renderccccc.ShaderBuiltin.Position:
                 continue
 
             # some APIs align postvs data, to traditional 'wide' alignment:
             # elements rounded up to 4 bytes and 3-wide vectors aligned to 4-wide
             # in all other cases data is tightly packed
-            if pipe.HasAlignedPostVSData(renderdoc.MeshDataStage.VSOut):
-                align = max(4, renderdoc.VarTypeByteSize(output.varType))
+            if pipe.HasAlignedPostVSData(renderccccc.MeshDataStage.VSOut):
+                align = max(4, renderccccc.VarTypeByteSize(output.varType))
                 if output.compCount == 3:
                     align *= 4
                 else:
@@ -131,17 +131,17 @@ for tri in range(min(4, meshdata.numIndices // 3)):
 
             data_offs = offset
 
-            offset += output.compCount * renderdoc.VarTypeByteSize(output.varType)
+            offset += output.compCount * renderccccc.VarTypeByteSize(output.varType)
 
             # for simplicity we don't handle many different variable types here, only
             # simple ones. You can use the varType and more complex struct formats to
             # decode other types of data
             fmtchar = ""
-            if output.varType == renderdoc.VarType.Float:
+            if output.varType == renderccccc.VarType.Float:
                 fmtchar = "f"
-            elif output.varType == renderdoc.VarType.UInt:
+            elif output.varType == renderccccc.VarType.UInt:
                 fmtchar = "I"
-            elif output.varType == renderdoc.VarType.SInt:
+            elif output.varType == renderccccc.VarType.SInt:
                 fmtchar = "i"
             if fmtchar != "":
                 fmt = f"={output.compCount}{fmtchar}"

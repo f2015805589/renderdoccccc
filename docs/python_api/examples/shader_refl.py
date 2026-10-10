@@ -1,24 +1,24 @@
 # these imports are not strictly necessary, but are convenient
-import renderdoc
-import qrenderdoc
+import renderccccc
+import qrenderccccc
 
 # this is here to give autocomplete when editing the example
 # in VS Code where it doesn't know about this global
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    pyrenderdoc = qrenderdoc.CaptureContext()
+    pyrenderccccc = qrenderccccc.CaptureContext()
 
-if not pyrenderdoc.IsCaptureLoaded():
-    filename = pyrenderdoc.Extensions().OpenFileName("Choose a capture", "", "*.rdc")
+if not pyrenderccccc.IsCaptureLoaded():
+    filename = pyrenderccccc.Extensions().OpenFileName("Choose a capture", "", "*.rdc")
 
-    pyrenderdoc.LoadCapture(filename, renderdoc.ReplayOptions(), filename, False, True)
+    pyrenderccccc.LoadCapture(filename, renderccccc.ReplayOptions(), filename, False, True)
 
-pyrenderdoc.CurPipelineState().GetVertexInputs()
+pyrenderccccc.CurPipelineState().GetVertexInputs()
 
 
-vs = pyrenderdoc.CurPipelineState().GetShaderReflection(renderdoc.ShaderStage.Vertex)
-ps = pyrenderdoc.CurPipelineState().GetShaderReflection(renderdoc.ShaderStage.Pixel)
+vs = pyrenderccccc.CurPipelineState().GetShaderReflection(renderccccc.ShaderStage.Vertex)
+ps = pyrenderccccc.CurPipelineState().GetShaderReflection(renderccccc.ShaderStage.Pixel)
 
 if vs is None or ps is None:
     raise ValueError("Expected a draw with a VS and PS to be selected")
@@ -102,7 +102,7 @@ if len(ps.samplers) > 0:
 
 print()
 
-print(f"PS was compiled by {renderdoc.ToolExecutable(ps.debugInfo.compiler)}")
+print(f"PS was compiled by {renderccccc.ToolExecutable(ps.debugInfo.compiler)}")
 print(f"{str(ps.debugInfo.encoding)} was compiled to {str(ps.encoding)}")
 
 if ps.debugInfo.debuggable:

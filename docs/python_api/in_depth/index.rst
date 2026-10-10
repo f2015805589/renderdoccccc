@@ -3,7 +3,7 @@ Further Reading on Python Scripting
 
 This section contains explanations of common concepts, useful interfaces, and advanced uses of python that go beyond scripts that are a few lines to accomplish a quick task.
 
-If you are writing python scripts more often, these concepts can let you go into much more complex and powerful customisations of RenderDoc's workflow.
+If you are writing python scripts more often, these concepts can let you go into much more complex and powerful customisations of Renderccccc's workflow.
 
 .. toctree::
     :maxdepth: 1

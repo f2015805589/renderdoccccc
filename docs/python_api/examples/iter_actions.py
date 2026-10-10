@@ -1,18 +1,18 @@
 # these imports are not strictly necessary, but are convenient
-import renderdoc
-import qrenderdoc
+import renderccccc
+import qrenderccccc
 
 # this is here to give autocomplete when editing the example
 # in VS Code where it doesn't know about this global
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    pyrenderdoc = qrenderdoc.CaptureContext()
+    pyrenderccccc = qrenderccccc.CaptureContext()
 
-if not pyrenderdoc.IsCaptureLoaded():
-    filename = pyrenderdoc.Extensions().OpenFileName("Choose a capture", "", "*.rdc")
+if not pyrenderccccc.IsCaptureLoaded():
+    filename = pyrenderccccc.Extensions().OpenFileName("Choose a capture", "", "*.rdc")
 
-    pyrenderdoc.LoadCapture(filename, renderdoc.ReplayOptions(), filename, False, True)
+    pyrenderccccc.LoadCapture(filename, renderccccc.ReplayOptions(), filename, False, True)
 
 # annotate the function parameter so that autocomplete
 # understands the type
@@ -22,13 +22,13 @@ from typing import List
 # recursively walk the actions and their children,
 # looking at marker regions. Returns a list of lines
 # so we can more easily indent when recursing
-def format_tree(actions: List[renderdoc.ActionDescription]):
+def format_tree(actions: List[renderccccc.ActionDescription]):
     draws, dispatches, copies = 0, 0, 0
     ret = []
 
     for a in actions:
         # take the flags type for brevity
-        ActionFlags = renderdoc.ActionFlags
+        ActionFlags = renderccccc.ActionFlags
 
         if a.flags & (ActionFlags.PushMarker | ActionFlags.MultiAction):
             # markers store their name in the action's customName
@@ -62,5 +62,5 @@ def format_tree(actions: List[renderdoc.ActionDescription]):
 
 # the root of the recursion starts with actions at the
 # root level of the capture
-for line in format_tree(pyrenderdoc.CurRootActions()):
+for line in format_tree(pyrenderccccc.CurRootActions()):
     print(line)

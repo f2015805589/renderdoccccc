@@ -7,7 +7,7 @@ import py_compile
 
 #################################################
 # Script to generate a compatible pythonXY.zip for a python version as
-# RenderDoc expects to distribute the standard library.
+# Renderccccc expects to distribute the standard library.
 # 
 # Normally the 'embeddable package' includes this, but not every version
 # of python has that - some versions are provided as source only if they
@@ -21,7 +21,7 @@ import py_compile
 #
 # PythonXY/python make_python_lib_zip.py
 #
-# Will set up everything RenderDoc expects for building against that
+# Will set up everything Renderccccc expects for building against that
 # version of python, expecting to write a pythonXY.zip next to that
 # executable (this will likely not work on linux, but this script is
 # generally only relevant on windows as linux distributions ship the
