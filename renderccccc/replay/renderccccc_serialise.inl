@@ -111,6 +111,9 @@ void DoSerialise(SerialiserType &ser, CaptureOptions &el)
   SERIALISE_MEMBER(captureAllCmdLists);
   SERIALISE_MEMBER(debugOutputMute);
   SERIALISE_MEMBER(softMemoryLimit);
+  SERIALISE_MEMBER(hookMode);
+  SERIALISE_MEMBER(dllMode);
+  SERIALISE_MEMBER(dllModeWait);
 
   SIZE_CHECK(24);
 }

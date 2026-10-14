@@ -58,6 +58,9 @@ struct CaptureOptions
     refAllResources = false;
     captureAllCmdLists = false;
     debugOutputMute = true;
+    hookMode = false;
+    dllMode = false;
+    dllModeWait = false;
     softMemoryLimit = 0;
   }
 
@@ -249,6 +252,44 @@ Default - enabled
 )");
   bool debugOutputMute;
 
+  DOCUMENT(R"(Use the experimental SetThreadContext startup injection path when launching a new
+process. This waits for the Windows loader's initial breakpoint before loading CaptureProbe.
+Existing-process injection and global hooking do not use this option.
+
+Default - disabled
+
+``True`` - Inject through the suspended primary thread's context.
+
+``False`` - Use the standard CreateRemoteThread injection path.
+
+:type: bool
+)");
+  bool hookMode;
+
+  DOCUMENT(R"(Deploy the proxy dxgi.dll next to the launched executable and start the process
+normally instead of injecting into it. The application loads the proxy instead of the system
+dxgi.dll, and the proxy loads CaptureProbe before the application can call any D3D function.
+Existing-process injection and global hooking do not use this option.
+
+Default - disabled
+
+``True`` - Copy the proxy dxgi.dll next to the executable and launch without injection.
+
+``False`` - Use the normal injection path.
+
+:type: bool
+)");
+  bool dllMode;
+
+  DOCUMENT(R"(With DLL mode, arm only: deploy the proxy and publish the configuration, then wait for
+the application to be started from outside (for example by Steam or its own launcher) instead of
+launching it. Some protected applications only run when their normal launcher starts them.
+
+Default - disabled
+
+:type: bool
+)");
+  bool dllModeWait;
   DOCUMENT(R"(Define a soft memory limit which some APIs may aim to keep overhead under where
 possible. Anything above this limit will where possible be saved directly to disk during capture.
 This will cause increased disk space use (which may cause a capture to fail if disk space is

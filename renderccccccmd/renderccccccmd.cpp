@@ -188,6 +188,9 @@ private:
   std::string cmdLine;
   std::string logFile;
   bool wait_for_exit = false;
+  bool hookMode = false;
+  bool dllMode = false;
+  bool dllModeWait = false;
 
 public:
   CaptureCommand() : Command() {}
@@ -195,6 +198,15 @@ public:
   {
     parser.set_footer("<executable> [program arguments]");
     parser.stop_at_rest(true);
+    parser.add("hook-mode", 0,
+               "Use experimental SetThreadContext startup injection after the Windows loader's "
+               "initial breakpoint.");
+    parser.add("dll-mode", 0,
+               "Deploy a proxy dxgi.dll next to the executable and launch it without injection, so "
+               "CaptureProbe is loaded before the application calls any D3D function.");
+    parser.add("dll-mode-wait", 0,
+               "With --dll-mode, arm only: deploy the proxy and wait for the application to be started "
+               "from outside (for example by Steam).");
   }
   virtual const char *Description() { return "Launches the given executable to capture."; }
   virtual bool IsInternalOnly() { return false; }
@@ -226,12 +238,19 @@ public:
     }
 
     wait_for_exit = parser.exist("wait-for-exit");
+    hookMode = parser.exist("hook-mode");
+    dllMode = parser.exist("dll-mode");
+    dllModeWait = parser.exist("dll-mode-wait");
 
     return true;
   }
 
-  virtual int Execute(const CaptureOptions &opts)
+  virtual int Execute(const CaptureOptions &captureOptions)
   {
+    CaptureOptions opts = captureOptions;
+    opts.hookMode = hookMode;
+    opts.dllMode = dllMode;
+    opts.dllModeWait = dllModeWait;
     std::cout << "Launching '" << executable << "'";
 
     if(!cmdLine.empty())

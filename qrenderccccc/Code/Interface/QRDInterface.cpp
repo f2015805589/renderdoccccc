@@ -105,6 +105,8 @@ CaptureSettings::operator QVariant() const
   opts[lit("refAllResources")] = options.refAllResources;
   opts[lit("captureAllCmdLists")] = options.captureAllCmdLists;
   opts[lit("debugOutputMute")] = options.debugOutputMute;
+  opts[lit("hookMode")] = options.hookMode;
+  opts[lit("dllMode")] = options.dllMode;
   opts[lit("softMemoryLimit")] = options.softMemoryLimit;
   ret[lit("options")] = opts;
 
@@ -149,6 +151,8 @@ CaptureSettings::CaptureSettings(const QVariant &v)
   options.refAllResources = opts[lit("refAllResources")].toBool();
   options.captureAllCmdLists = opts[lit("captureAllCmdLists")].toBool();
   options.debugOutputMute = opts[lit("debugOutputMute")].toBool();
+  options.hookMode = opts[lit("hookMode")].toBool();
+  options.dllMode = opts[lit("dllMode")].toBool();
   options.softMemoryLimit = opts[lit("softMemoryLimit")].toUInt();
 
   if(data.contains(lit("queuedFrameCap")))

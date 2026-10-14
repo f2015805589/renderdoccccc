@@ -348,6 +348,16 @@ void RENDERCCCCC_CC GetAPIVersion_1_7_0(int *major, int *minor, int *patch)
     *patch = 0;
 }
 
+void RENDERCCCCC_CC GetAPIVersion_1_8_0(int *major, int *minor, int *patch)
+{
+  if(major)
+    *major = 1;
+  if(minor)
+    *minor = 8;
+  if(patch)
+    *patch = 0;
+}
+
 RENDERCCCCC_API_1_7_0 api_1_7_0;
 void Init_1_7_0()
 {
@@ -401,6 +411,14 @@ void Init_1_7_0()
   api.SetCommandAnnotation = &SetCommandAnnotation;
 }
 
+RENDERCCCCC_API_1_8_0 api_1_8_0;
+void Init_1_8_0()
+{
+  Init_1_7_0();
+  api_1_8_0 = api_1_7_0;
+  api_1_8_0.GetAPIVersion = &GetAPIVersion_1_8_0;
+}
+
 extern "C" RENDERCCCCC_API int RENDERCCCCC_CC RENDERCCCCC_GetAPI(RENDERCCCCC_Version version,
                                                            void **outAPIPointers)
 {
@@ -439,6 +457,7 @@ extern "C" RENDERCCCCC_API int RENDERCCCCC_CC RENDERCCCCC_GetAPI(RENDERCCCCC_Ver
   API_VERSION_HANDLE(1_5_0, 1_7_0);
   API_VERSION_HANDLE(1_6_0, 1_7_0);
   API_VERSION_HANDLE(1_7_0, 1_7_0);
+  API_VERSION_HANDLE(1_8_0, 1_8_0);
 
 #undef API_VERSION_HANDLE
 

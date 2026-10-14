@@ -22,20 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-struct ShimData
-{
-  wchar_t pathmatchstring[2048];
-  wchar_t rdocpath[2048];
-  char debuglog[2048];
-  char capfile[2048];
-
-  unsigned char opts[512];
-};
-
-#ifdef WIN64
-#define GLOBAL_HOOK_DATA_NAME "CaptureProbeGlobalHookData64"
-#define SHIM_DLL_NAME "captureprobeshim64.dll"
-#else
-#define GLOBAL_HOOK_DATA_NAME "CaptureProbeGlobalHookData32"
-#define SHIM_DLL_NAME "captureprobeshim32.dll"
-#endif
+// the shared data layout and the mapping/shim names live with the other windows
+// specific code so that the launcher, the shim and the dll mode proxy all agree
+#include "../../renderccccc/os/win32/global_hook_data.h"

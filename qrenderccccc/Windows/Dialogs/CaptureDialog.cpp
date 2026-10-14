@@ -211,6 +211,21 @@ CaptureDialog::CaptureDialog(ICaptureContext &ctx, OnCaptureMethod captureCallba
   QObject::connect(ui->workDirPath, &RDLineEdit::keyPress, this, &CaptureDialog::lineEdit_keyPress);
   QObject::connect(ui->cmdline, &RDLineEdit::keyPress, this, &CaptureDialog::lineEdit_keyPress);
 
+  // hook mode and dll mode are two different ways to get CaptureProbe into a new
+  // process, they can't be combined
+  QObject::connect(ui->HookMode, &QCheckBox::toggled, this, [this](bool checked) {
+    if(checked && ui->DllMode->isChecked())
+      ui->DllMode->setChecked(false);
+
+    UpdateGlobalHook();
+  });
+  QObject::connect(ui->DllMode, &QCheckBox::toggled, this, [this](bool checked) {
+    if(checked && ui->HookMode->isChecked())
+      ui->HookMode->setChecked(false);
+
+    UpdateGlobalHook();
+  });
+
   m_AndroidFlags = AndroidFlags::NoFlags;
 
   m_CaptureCallback = captureCallback;
@@ -828,7 +843,9 @@ void CaptureDialog::on_toggleGlobal_clicked()
 
     QString capturefile = m_Ctx.TempCaptureFilename(QFileInfo(exe).baseName());
 
-    ResultDetails success = RENDERCCCCC_StartGlobalHook(exe, capturefile, Settings().options);
+    CaptureOptions options = Settings().options;
+    options.hookMode = false;
+    ResultDetails success = RENDERCCCCC_StartGlobalHook(exe, capturefile, options);
 
     if(!success.OK())
     {
@@ -920,6 +937,9 @@ void CaptureDialog::SetSettings(CaptureSettings settings)
   ui->AllowFullscreen->setChecked(settings.options.allowFullscreen);
   ui->AllowVSync->setChecked(settings.options.allowVSync);
   ui->HookIntoChildren->setChecked(settings.options.hookIntoChildren);
+  ui->HookMode->setChecked(settings.options.hookMode);
+  ui->DllMode->setChecked(settings.options.dllMode);
+  ui->DllModeWait->setChecked(settings.options.dllModeWait);
   ui->CaptureCallstacks->setChecked(settings.options.captureCallstacks);
   ui->CaptureCallstacksOnlyActions->setChecked(settings.options.captureCallstacksOnlyActions);
   ui->APIValidation->setChecked(settings.options.apiValidation);
@@ -969,6 +989,9 @@ CaptureSettings CaptureDialog::Settings()
   ret.options.allowFullscreen = ui->AllowFullscreen->isChecked();
   ret.options.allowVSync = ui->AllowVSync->isChecked();
   ret.options.hookIntoChildren = ui->HookIntoChildren->isChecked();
+  ret.options.hookMode = ui->HookMode->isChecked();
+  ret.options.dllMode = ui->DllMode->isChecked();
+  ret.options.dllModeWait = ui->DllModeWait->isChecked();
   ret.options.captureCallstacks = ui->CaptureCallstacks->isChecked();
   ret.options.captureCallstacksOnlyActions = ui->CaptureCallstacksOnlyActions->isChecked();
   ret.options.apiValidation = ui->APIValidation->isChecked();
@@ -1139,6 +1162,31 @@ void CaptureDialog::UpdateGlobalHook()
     ui->toggleGlobal->setEnabled(false);
     ui->globalLabel->setText(tr("Global hooking requires an executable path, or filename"));
   }
+
+  ui->HookMode->setEnabled(!IsInjectMode() && !ui->toggleGlobal->isChecked());
+  if(IsInjectMode())
+    ui->HookMode->setToolTip(tr("Hook Mode only applies when launching a new process."));
+  else if(ui->toggleGlobal->isChecked())
+    ui->HookMode->setToolTip(tr("Hook Mode is not used by Global Hook."));
+  else
+    ui->HookMode->setToolTip(
+        tr("Experimental: use SetThreadContext after the Windows loader's initial breakpoint."));
+
+  const bool dllModeAllowed = !IsInjectMode() && !ui->toggleGlobal->isChecked() &&
+                               !ui->HookMode->isChecked();
+
+  ui->DllMode->setEnabled(dllModeAllowed);
+  ui->DllModeWait->setEnabled(dllModeAllowed && ui->DllMode->isChecked());
+  if(IsInjectMode())
+    ui->DllMode->setToolTip(tr("DLL Mode only applies when launching a new process."));
+  else if(ui->toggleGlobal->isChecked())
+    ui->DllMode->setToolTip(tr("DLL Mode is not used by Global Hook."));
+  else if(ui->HookMode->isChecked())
+    ui->DllMode->setToolTip(tr("DLL Mode and Hook Mode are mutually exclusive."));
+  else
+    ui->DllMode->setToolTip(tr("Copy a proxy dxgi.dll next to the executable and launch it "
+                               "without injecting, so CaptureProbe is loaded before the game "
+                               "calls any D3D function."));
 }
 
 void CaptureDialog::UpdateRemoteHost()
@@ -1184,7 +1232,11 @@ ICaptureConnection *CaptureDialog::Launch()
       QString name = m_ProcessModel->data(m_ProcessModel->index(item.row(), 0)).toString();
       uint32_t PID = m_ProcessModel->data(m_ProcessModel->index(item.row(), 1)).toUInt();
 
-      m_InjectCallback(PID, Settings().environment, name, Settings().options,
+      CaptureOptions options = Settings().options;
+      options.hookMode = false;
+      options.dllMode = false;
+      options.dllModeWait = false;
+      m_InjectCallback(PID, Settings().environment, name, options,
                        [this, &ret](ICaptureConnection *live) {
                          if(ui->queueFrameCap->isChecked())
                            live->QueueCapture((int)ui->queuedFrame->value(),
@@ -1259,7 +1311,30 @@ ICaptureConnection *CaptureDialog::Launch()
       }
     }
 
-    m_CaptureCallback(exe, workingDir, cmdLine, Settings().environment, Settings().options,
+    CaptureOptions options = Settings().options;
+    if(ui->toggleGlobal->isChecked())
+    {
+      options.hookMode = false;
+      options.dllMode = false;
+      options.dllModeWait = false;
+    }
+    else if(options.dllMode)
+    {
+      if(!ui->DllModeWait->isChecked())
+        options.dllModeWait = false;
+      // dll mode replaces injection entirely, and only works for local launches
+      options.hookMode = false;
+
+      if(m_Ctx.Replay().CurrentRemote().IsValid())
+      {
+        options.dllMode = false;
+        RDDialog::critical(this, tr("DLL Mode is local only"),
+                           tr("DLL Mode deploys a proxy dxgi.dll next to the executable, so it "
+                              "cannot be used with a remote host. Launching without it."));
+      }
+    }
+
+    m_CaptureCallback(exe, workingDir, cmdLine, Settings().environment, options,
                       [this, &ret](ICaptureConnection *live) {
                         if(ui->queueFrameCap->isChecked())
                           live->QueueCapture((int)ui->queuedFrame->value(),

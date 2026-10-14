@@ -57,6 +57,9 @@ int RENDERCCCCC_CC SetCaptureOptionU32(RENDERCCCCC_CaptureOption opt, uint32_t v
         RDCWARN("AllowUnsupportedVendorExtensions unexpected parameter %x", val);
       break;
     case eRENDERCCCCC_Option_SoftMemoryLimit: opts.softMemoryLimit = val; break;
+    case eRENDERCCCCC_Option_HookMode: opts.hookMode = (val != 0); break;
+    case eRENDERCCCCC_Option_DllMode: opts.dllMode = (val != 0); break;
+    case eRENDERCCCCC_Option_DllModeWait: opts.dllModeWait = (val != 0); break;
     default: RDCLOG("Unrecognised capture option '%d'", opt); return 0;
   }
 
@@ -90,6 +93,9 @@ int RENDERCCCCC_CC SetCaptureOptionF32(RENDERCCCCC_CaptureOption opt, float val)
       RDCWARN("AllowUnsupportedVendorExtensions unexpected parameter %f", val);
       break;
     case eRENDERCCCCC_Option_SoftMemoryLimit: opts.softMemoryLimit = (uint32_t)val; break;
+    case eRENDERCCCCC_Option_HookMode: opts.hookMode = (val != 0.0f); break;
+    case eRENDERCCCCC_Option_DllMode: opts.dllMode = (val != 0.0f); break;
+    case eRENDERCCCCC_Option_DllModeWait: opts.dllModeWait = (val != 0.0f); break;
     default: RDCLOG("Unrecognised capture option '%d'", opt); return 0;
   }
 
@@ -129,6 +135,12 @@ uint32_t RENDERCCCCC_CC GetCaptureOptionU32(RENDERCCCCC_CaptureOption opt)
     case eRENDERCCCCC_Option_AllowUnsupportedVendorExtensions: return 0;
     case eRENDERCCCCC_Option_SoftMemoryLimit:
       return (Renderccccc::Inst().GetCaptureOptions().softMemoryLimit);
+    case eRENDERCCCCC_Option_HookMode:
+      return (Renderccccc::Inst().GetCaptureOptions().hookMode ? 1 : 0);
+    case eRENDERCCCCC_Option_DllMode:
+      return (Renderccccc::Inst().GetCaptureOptions().dllMode ? 1 : 0);
+    case eRENDERCCCCC_Option_DllModeWait:
+      return (Renderccccc::Inst().GetCaptureOptions().dllModeWait ? 1 : 0);
     default: break;
   }
 
@@ -168,6 +180,12 @@ float RENDERCCCCC_CC GetCaptureOptionF32(RENDERCCCCC_CaptureOption opt)
     case eRENDERCCCCC_Option_AllowUnsupportedVendorExtensions: return 0.0f;
     case eRENDERCCCCC_Option_SoftMemoryLimit:
       return (Renderccccc::Inst().GetCaptureOptions().softMemoryLimit * 1.0f);
+    case eRENDERCCCCC_Option_HookMode:
+      return (Renderccccc::Inst().GetCaptureOptions().hookMode ? 1.0f : 0.0f);
+    case eRENDERCCCCC_Option_DllMode:
+      return (Renderccccc::Inst().GetCaptureOptions().dllMode ? 1.0f : 0.0f);
+    case eRENDERCCCCC_Option_DllModeWait:
+      return (Renderccccc::Inst().GetCaptureOptions().dllModeWait ? 1.0f : 0.0f);
     default: break;
   }
 
@@ -197,6 +215,9 @@ TEST_CASE("Check CaptureOptions de/serialise to string", "[serialise]")
       &opts.refAllResources,
       &opts.captureAllCmdLists,
       &opts.debugOutputMute,
+      &opts.hookMode,
+      &opts.dllMode,
+      &opts.dllModeWait,
   };
 
   for(uint32_t delay = 0; delay < 1000; delay++)

@@ -232,6 +232,27 @@ typedef enum RENDERCCCCC_CaptureOption
   //
   // Default - 0 Megabytes
   eRENDERCCCCC_Option_SoftMemoryLimit = 13,
+
+  // Use the experimental SetThreadContext startup injection path when launching a new process.
+  // Existing-process injection and global hooking ignore this option.
+  //
+  // Default - disabled
+  eRENDERCCCCC_Option_HookMode = 14,
+
+  // Deploy the proxy dxgi.dll next to the launched executable and start the process normally,
+  // instead of injecting into it. The application loads our proxy instead of the system dxgi.dll,
+  // and the proxy loads CaptureProbe before the application can call any D3D function. Does not
+  // apply to existing-process injection or global hooking.
+  //
+  // Default - disabled
+  eRENDERCCCCC_Option_DllMode = 15,
+
+  // With DLL mode, don't launch the executable ourselves: deploy the proxy, publish the
+  // configuration and wait for the application to be started from outside (for example by Steam or
+  // its own launcher), which is required by some protected applications.
+  //
+  // Default - disabled
+  eRENDERCCCCC_Option_DllModeWait = 16,
 } RENDERCCCCC_CaptureOption;
 
 // Sets an option that controls how Renderccccc behaves on capture.
@@ -715,6 +736,7 @@ typedef enum RENDERCCCCC_Version
   eRENDERCCCCC_API_Version_1_5_0 = 10500,    // RENDERCCCCC_API_1_5_0 = 1 05 00
   eRENDERCCCCC_API_Version_1_6_0 = 10600,    // RENDERCCCCC_API_1_6_0 = 1 06 00
   eRENDERCCCCC_API_Version_1_7_0 = 10700,    // RENDERCCCCC_API_1_7_0 = 1 07 00
+  eRENDERCCCCC_API_Version_1_8_0 = 10800,    // RENDERCCCCC_API_1_8_0 = 1 08 00
 } RENDERCCCCC_Version;
 
 // API version changelog:
@@ -747,6 +769,8 @@ typedef enum RENDERCCCCC_Version
 //         capture made with StartFrameCapture() or EndFrameCapture()
 // 1.7.0 - Added feature: SetObjectAnnotation() / SetCommandAnnotation() for adding rich
 //         annotations to objects and command streams
+// 1.8.0 - Added capture options eRENDERCCCCC_Option_HookMode,
+//         eRENDERCCCCC_Option_DllMode and eRENDERCCCCC_Option_DllModeWait.
 
 typedef struct RENDERCCCCC_API_1_7_0
 {
@@ -831,6 +855,9 @@ typedef struct RENDERCCCCC_API_1_7_0
   pRENDERCCCCC_SetObjectAnnotation SetObjectAnnotation;
   pRENDERCCCCC_SetCommandAnnotation SetCommandAnnotation;
 } RENDERCCCCC_API_1_7_0;
+
+// 1.8.0 adds a capture option but no API function pointers, so the structure is unchanged.
+typedef RENDERCCCCC_API_1_7_0 RENDERCCCCC_API_1_8_0;
 
 typedef RENDERCCCCC_API_1_7_0 RENDERCCCCC_API_1_0_0;
 typedef RENDERCCCCC_API_1_7_0 RENDERCCCCC_API_1_0_1;

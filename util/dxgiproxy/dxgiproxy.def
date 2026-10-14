@@ -1,0 +1,27 @@
+; Proxy dxgi.dll: exports every name the system dxgi.dll exports, all pointing at
+; ProxyExportStub. DllMain rewrites each address in our export table to a jump
+; thunk onto the real function (see dxgiproxy.cpp), so callers that don't go
+; through the capture dll's GetProcAddress/IAT interception still get the real
+; implementation.
+LIBRARY dxgi
+
+EXPORTS
+    ApplyCompatResolutionQuirking=ProxyExportStub
+    CompatString=ProxyExportStub
+    CompatValue=ProxyExportStub
+    CreateDXGIFactory=ProxyExportStub
+    CreateDXGIFactory1=ProxyExportStub
+    CreateDXGIFactory2=ProxyExportStub
+    DXGID3D10CreateDevice=ProxyExportStub
+    DXGID3D10CreateLayeredDevice=ProxyExportStub
+    DXGID3D10GetLayeredDeviceSize=ProxyExportStub
+    DXGID3D10RegisterLayers=ProxyExportStub
+    DXGIDeclareAdapterRemovalSupport=ProxyExportStub
+    DXGIDumpJournal=ProxyExportStub
+    DXGIGetDebugInterface1=ProxyExportStub
+    DXGIReportAdapterConfiguration=ProxyExportStub
+    PIXBeginCapture=ProxyExportStub
+    PIXEndCapture=ProxyExportStub
+    PIXGetCaptureState=ProxyExportStub
+    SetAppCompatStringPointer=ProxyExportStub
+    UpdateHMDEmulationStatus=ProxyExportStub
