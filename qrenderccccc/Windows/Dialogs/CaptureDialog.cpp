@@ -56,6 +56,51 @@ static QString GetDescription(const EnvironmentModification &env)
 
 Q_DECLARE_METATYPE(CaptureSettings);
 
+// The proxy names offered for DLL mode. The proxy renames its own entry in the
+// loader's module list once it has loaded everything, so the name has to be one the
+// application is unlikely to have loaded already - a name that is already in the
+// process would appear twice in the module list, which is more suspicious than the
+// proxy being visible in the first place.
+//
+// The path column is where the disguised path points: the system directory, where a
+// real signed file of that name exists and a path/signature check finds an ordinary
+// system module, or the proxy's own directory, where the named file deliberately does
+// not exist.
+//
+// The path values match DLL_MODE_PATH_* in renderccccc/os/win32/global_hook_data.h,
+// which cannot be included here. Zero is the default, so the system directory wins for
+// anything that was never configured.
+static const uint32_t DllModePathSystemDir = 0;
+static const uint32_t DllModePathProxyDir = 1;
+
+struct DllModeNamePreset
+{
+  const char *name;
+  uint32_t path;
+  const char *label;
+  const char *tooltip;
+};
+
+static const DllModeNamePreset DllModeNamePresets[] = {
+    {"mfreadwrite.dll", DllModePathSystemDir, "recommended, rarely loaded",
+     "Media Foundation source reader/writer. Games rarely load it themselves, and the "
+     "disguised path points at a real, signed system file."},
+    {"msdmo.dll", DllModePathSystemDir, "DirectShow media objects, very rare",
+     "Almost never loaded by games."},
+    {"dsdmo.dll", DllModePathSystemDir, "DirectShow filters, very rare",
+     "Almost never loaded by games."},
+    {"mf.dll", DllModePathSystemDir, "legacy Media Foundation, very rare",
+     "Rarely loaded by anything modern."},
+    {"ksuser.dll", DllModePathSystemDir, "kernel streaming, very rare",
+     "Rarely loaded, except by capture and streaming pipelines."},
+    {"mfplat.dll", DllModePathProxyDir, "legacy default, risky",
+     "What earlier builds used. Media Foundation is quite often loaded by games "
+     "themselves, which would leave two entries with the same name, so the disguised "
+     "path stays next to the proxy rather than in the system directory."},
+    {"dxgi.dll", DllModePathProxyDir, "no disguise",
+     "Leave the proxy visible as a dxgi.dll in the application's directory."},
+};
+
 void CaptureDialog::initWarning(RDLabel *warning)
 {
   if(!warning)
@@ -225,6 +270,44 @@ CaptureDialog::CaptureDialog(ICaptureContext &ctx, OnCaptureMethod captureCallba
 
     UpdateGlobalHook();
   });
+
+  // fill in the DLL mode disguise choices: suggested names, plus anything typed in
+  ui->DllModeName->clear();
+
+  for(const DllModeNamePreset &preset : DllModeNamePresets)
+  {
+    QString text = QString::fromUtf8(preset.name);
+
+    if(preset.label[0])
+      text += lit(" - ") + tr(preset.label);
+
+    ui->DllModeName->addItem(text, QVariant(QString::fromUtf8(preset.name)));
+    ui->DllModeName->setItemData(ui->DllModeName->count() - 1, QVariant((uint)preset.path),
+                                 Qt::UserRole + 1);
+    ui->DllModeName->setItemData(ui->DllModeName->count() - 1, tr(preset.tooltip), Qt::ToolTipRole);
+  }
+
+  ui->DllModeName->setCurrentIndex(0);
+
+  ui->DllModePath->clear();
+  ui->DllModePath->addItem(tr("System directory (recommended)"),
+                           QVariant((uint)DllModePathSystemDir));
+  ui->DllModePath->addItem(tr("Next to the proxy"), QVariant((uint)DllModePathProxyDir));
+  ui->DllModePath->setCurrentIndex(0);
+
+  // picking a suggested name also picks the path that belongs with it
+  QObject::connect(ui->DllModeName, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+                   this, [this](int index) {
+                     QVariant presetPath = ui->DllModeName->itemData(index, Qt::UserRole + 1);
+
+                     if(presetPath.isValid())
+                     {
+                       int pathIndex = ui->DllModePath->findData(presetPath);
+
+                       if(pathIndex >= 0)
+                         ui->DllModePath->setCurrentIndex(pathIndex);
+                     }
+                   });
 
   m_AndroidFlags = AndroidFlags::NoFlags;
 
@@ -940,6 +1023,41 @@ void CaptureDialog::SetSettings(CaptureSettings settings)
   ui->HookMode->setChecked(settings.options.hookMode);
   ui->DllMode->setChecked(settings.options.dllMode);
   ui->DllModeWait->setChecked(settings.options.dllModeWait);
+
+  // the dll mode disguise: select the suggested name that matches what was stored,
+  // otherwise show the stored name as it was typed in. With nothing stored at all the
+  // recommended suggestion is shown, which is what a launch will use.
+  {
+    QString name = QString::fromUtf8(settings.options.dllModeProxyName);
+
+    const bool nothingStored = name.isEmpty();
+    int preset = nothingStored ? 0 : -1;
+
+    for(int i = 0; preset < 0 && i < ui->DllModeName->count(); i++)
+    {
+      if(ui->DllModeName->itemData(i, Qt::UserRole).toString().compare(name, Qt::CaseInsensitive) == 0)
+        preset = i;
+    }
+
+    if(preset >= 0)
+    {
+      // also sets the path that belongs with this suggestion
+      ui->DllModeName->setCurrentIndex(preset);
+    }
+    else
+    {
+      ui->DllModeName->setCurrentIndex(-1);
+      ui->DllModeName->setEditText(name);
+    }
+
+    if(!nothingStored)
+    {
+      int pathIndex = ui->DllModePath->findData(QVariant((uint)settings.options.dllModeProxyPath));
+
+      if(pathIndex >= 0)
+        ui->DllModePath->setCurrentIndex(pathIndex);
+    }
+  }
   ui->CaptureCallstacks->setChecked(settings.options.captureCallstacks);
   ui->CaptureCallstacksOnlyActions->setChecked(settings.options.captureCallstacksOnlyActions);
   ui->APIValidation->setChecked(settings.options.apiValidation);
@@ -992,6 +1110,22 @@ CaptureSettings CaptureDialog::Settings()
   ret.options.hookMode = ui->HookMode->isChecked();
   ret.options.dllMode = ui->DllMode->isChecked();
   ret.options.dllModeWait = ui->DllModeWait->isChecked();
+
+  // the item text of the name combo has a note appended, so the name itself comes from
+  // the item data. A name typed in by hand has no item and is used as it is.
+  {
+    QVariant presetName = ui->DllModeName->currentData();
+    QString name =
+        presetName.isValid() ? presetName.toString() : ui->DllModeName->currentText().trimmed();
+
+    if(name.isEmpty())
+      name = QString::fromUtf8(DllModeNamePresets[0].name);
+
+    strncpy_s(ret.options.dllModeProxyName, sizeof(ret.options.dllModeProxyName),
+              name.toUtf8().constData(), _TRUNCATE);
+
+    ret.options.dllModeProxyPath = ui->DllModePath->currentData().toUInt();
+  }
   ret.options.captureCallstacks = ui->CaptureCallstacks->isChecked();
   ret.options.captureCallstacksOnlyActions = ui->CaptureCallstacksOnlyActions->isChecked();
   ret.options.apiValidation = ui->APIValidation->isChecked();
@@ -1187,6 +1321,14 @@ void CaptureDialog::UpdateGlobalHook()
     ui->DllMode->setToolTip(tr("Copy a proxy dxgi.dll next to the executable and launch it "
                                "without injecting, so CaptureProbe is loaded before the game "
                                "calls any D3D function."));
+
+  // the disguise only matters while dll mode is actually going to be used
+  const bool dllModeSelected = dllModeAllowed && ui->DllMode->isChecked();
+
+  ui->DllModeName->setEnabled(dllModeSelected);
+  ui->DllModeNameLabel->setEnabled(dllModeSelected);
+  ui->DllModePath->setEnabled(dllModeSelected);
+  ui->DllModePathLabel->setEnabled(dllModeSelected);
 }
 
 void CaptureDialog::UpdateRemoteHost()

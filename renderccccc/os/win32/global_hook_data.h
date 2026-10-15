@@ -54,7 +54,41 @@ struct ShimData
   // connect to it exactly as it does after a normal injection.
   uint32_t ident;
   uint32_t reserved;
+
+  // Name the dll mode proxy disguises itself as once it has loaded everything:
+  // its entry in the loader's module list (BaseDllName/FullDllName) is renamed to
+  // this. Never a path, only a file name - the launcher sanitises it and the proxy
+  // refuses anything that is not a plain file name. Empty means the proxy's own
+  // default.
+  wchar_t proxyname[64];
+  // Where the disguised full path points, one of the DLL_MODE_PATH_* values below.
+  uint32_t proxypath;
 };
+
+// Where the disguised full path of the proxy points. The system directory is the
+// default: the disguised path then names a real, signed system module, so a check for
+// the file or its signature finds an ordinary system file. The proxy's own directory is
+// the conservative choice - the named file deliberately does not exist, so nothing can
+// load a module from it - but a check for the file will not find it.
+//
+// Zero is the default so that a zero-initialised CaptureOptions gets this choice.
+#define DLL_MODE_PATH_SYSTEM_DIR 0
+#define DLL_MODE_PATH_PROXY_DIR 1
+
+// The name the proxy disguises itself as when nothing else is configured: a real
+// system component that is a plausible thing for a game process to have loaded, but
+// that games rarely load themselves (a name that is already in the process would
+// appear twice in the module list once the proxy disguises itself as it).
+//
+// Other names that fit the same description, and the ones to avoid:
+//  * good: msdmo.dll, dsdmo.dll, ksuser.dll, mf.dll, mfreadwrite.dll, pdh.dll
+//  * avoid because games commonly load them: mfplat.dll, d3dcompiler_47.dll,
+//    xinput1_4.dll, dinput8.dll, hid.dll, dwrite.dll, d2d1.dll, dcomp.dll,
+//    dxcore.dll, d3d12core.dll, vulkan-1.dll, nvapi64.dll, winmm.dll, version.dll,
+//    wintrust.dll, msvcp140.dll, ucrtbase.dll
+//  * avoid because they are always in the process: KnownDLLs (kernel32, user32,
+//    ole32, combase, shcore, shell32, ...) and ntdll, kernelbase, win32u
+#define DLL_MODE_DEFAULT_PROXY_NAME L"mfreadwrite.dll"
 
 // _WIN64 is what the compiler defines, WIN64 is what the build system defines -
 // accept either so the name matches no matter how a module was built

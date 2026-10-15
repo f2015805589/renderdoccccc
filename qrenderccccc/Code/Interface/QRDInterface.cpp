@@ -107,6 +107,8 @@ CaptureSettings::operator QVariant() const
   opts[lit("debugOutputMute")] = options.debugOutputMute;
   opts[lit("hookMode")] = options.hookMode;
   opts[lit("dllMode")] = options.dllMode;
+  opts[lit("dllModeName")] = QString::fromUtf8(options.dllModeProxyName);
+  opts[lit("dllModePath")] = options.dllModeProxyPath;
   opts[lit("softMemoryLimit")] = options.softMemoryLimit;
   ret[lit("options")] = opts;
 
@@ -153,6 +155,11 @@ CaptureSettings::CaptureSettings(const QVariant &v)
   options.debugOutputMute = opts[lit("debugOutputMute")].toBool();
   options.hookMode = opts[lit("hookMode")].toBool();
   options.dllMode = opts[lit("dllMode")].toBool();
+
+  // absent in settings written before the disguise was configurable
+  qstrncpy(options.dllModeProxyName, opts[lit("dllModeName")].toString().toUtf8().constData(),
+           sizeof(options.dllModeProxyName));
+  options.dllModeProxyPath = opts[lit("dllModePath")].toUInt();
   options.softMemoryLimit = opts[lit("softMemoryLimit")].toUInt();
 
   if(data.contains(lit("queuedFrameCap")))

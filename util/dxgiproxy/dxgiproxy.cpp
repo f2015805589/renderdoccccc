@@ -40,12 +40,19 @@
 //   4. loads the capture dll (captureprobe.dll) so its hooks are registered
 //      before the application makes any D3D call,
 //   5. applies the configuration the launcher published in shared memory and
-//      reports back the target control ident, so the launcher can connect.
+//      reports back the target control ident, so the launcher can connect,
+//   6. disguises itself, so the application sees no trace of a dxgi.dll that it
+//      did not ship with: the file it was loaded from is renamed to
+//      'dxgi.dll.tmp' and its entry in the loader's module list is renamed to
+//      'mfplat.dll'.
 //
 // Everything in step 4/5 is deliberately done during DllMain: doing it on a
 // worker thread would let the application reach D3D before the hooks exist.
+// Step 6 is the last thing that happens, so none of the steps above are affected
+// by the disguise.
 
 #include <windows.h>
+#include <intrin.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -127,6 +134,11 @@ static HMODULE gSystemDxgi = NULL;
 static HMODULE gSystemD3D12 = NULL;
 static HMODULE gCaptureDll = NULL;
 static bool gInitialised = false;
+
+// the disguise the launcher asked for, copied out of the shared configuration while it
+// is mapped - the disguise itself runs at the very end of DllMain, long after that
+static wchar_t gDisguiseName[64] = {};
+static uint32_t gDisguisePath = DLL_MODE_PATH_SYSTEM_DIR;
 
 // The jump thunks live in our own image: an export table entry holds a 32-bit
 // RVA, so a thunk allocated anywhere else (VirtualAlloc typically returns an
@@ -397,6 +409,346 @@ static void ConfigureCaptureDll(HMODULE capture, ShimData *data, bool writable)
   data->targetStatus = ident != 0 ? 3 : 2;
 }
 
+// ---------------------------------------------------------------------------
+// Disguise
+//
+// Once everything this module needs - the system dxgi/d3d12 and the capture dll
+// with all of its hooks - is loaded, the proxy stops being visible in two ways:
+//
+//   a. the file it was loaded from is renamed to 'dxgi.dll.tmp', so scanning the
+//      application's directory does not find a dxgi.dll the application did not
+//      ship with itself. The file cannot be deleted while it is mapped (a loaded
+//      image keeps it open, and a delete is refused with a sharing violation),
+//      but it can be renamed - the loader opens module files with FILE_SHARE_DELETE.
+//      The launcher removes the renamed file once the target exits.
+//   b. the loader's entry for this module is renamed, so GetModuleFileName, module
+//      enumeration, toolhelp snapshots and anything else that reads the PEB report a
+//      system module instead of the proxy.
+//
+// The name and where the disguised full path points are configuration, published by
+// the launcher (see CaptureOptions::dllModeProxyName/dllModeProxyPath and the
+// defaults in global_hook_data.h). A name of 'dxgi.dll' turns the disguise off.
+//
+// The disguised full path either stays in the proxy's own directory - where that
+// file deliberately does not exist, so nothing can load a second copy of this proxy
+// from it - or points into the system directory, where a real, signed system module
+// of that name exists and a path/signature check finds a normal system file. In both
+// cases nothing in this process loads that path (see the reference-counting in
+// win32_hook.cpp), so the second form cannot pull the real module in as a side
+// effect.
+//
+// Both steps are best effort and independent: if the file cannot be renamed the
+// module list is still disguised, and the other way around.
+// ---------------------------------------------------------------------------
+
+#define PROXY_RENAMED_SUFFIX L".tmp"
+
+// how much of a loader data table entry is scanned for its name fields. Both
+// names are within the first 0x70 bytes on 32- and 64-bit Windows; the entry
+// itself is larger than this, so the scan never leaves the allocation.
+#define PROXY_LDR_ENTRY_SCAN 0x80
+
+struct ProxyUnicodeString
+{
+  USHORT Length;
+  USHORT MaximumLength;
+  wchar_t *Buffer;
+};
+
+struct ProxyListEntry
+{
+  ProxyListEntry *Flink;
+  ProxyListEntry *Blink;
+};
+
+// only the head of PEB_LDR_DATA is needed. The loader lists are the first member
+// of LDR_DATA_TABLE_ENTRY, so a link in InLoadOrderModuleList *is* the entry, and
+// the names inside it are located by their contents (see FindModuleNameField)
+// rather than by hard-coded offsets that differ between Windows versions.
+struct ProxyLdrData
+{
+  ULONG Length;
+  BOOLEAN Initialized;
+  HANDLE SsHandle;
+  ProxyListEntry InLoadOrderModuleList;
+};
+
+struct ProxyPeb
+{
+  BYTE Reserved1[2];
+  BYTE BeingDebugged;
+  BYTE Reserved2[1];
+  void *Reserved3[2];
+  ProxyLdrData *Ldr;
+};
+
+static ProxyPeb *CurrentPeb()
+{
+#if defined(_WIN64)
+  return (ProxyPeb *)__readgsqword(0x60);
+#else
+  return (ProxyPeb *)__readfsdword(0x30);
+#endif
+}
+
+// is [ptr, ptr+bytes) inside committed readable memory? VirtualQuery is safe to
+// call with any address, so this can validate a pointer that was found by
+// scanning memory that only looks like a UNICODE_STRING.
+static bool IsReadableMemory(const void *ptr, size_t bytes)
+{
+  if(ptr == NULL || bytes == 0)
+    return false;
+
+  MEMORY_BASIC_INFORMATION info = {};
+  if(VirtualQuery(ptr, &info, sizeof(info)) != sizeof(info))
+    return false;
+
+  if(info.State != MEM_COMMIT)
+    return false;
+
+  if(info.Protect & (PAGE_NOACCESS | PAGE_GUARD))
+    return false;
+
+  return (const BYTE *)ptr + bytes <= (const BYTE *)info.BaseAddress + info.RegionSize;
+}
+
+// finds the UNICODE_STRING inside a loader data table entry that holds exactly
+// `value`. FullDllName and BaseDllName are the only such fields of an entry, so
+// matching on the string itself works on every Windows version without knowing
+// where the fields are.
+static ProxyUnicodeString *FindModuleNameField(BYTE *entry, const wchar_t *value)
+{
+  const size_t chars = wcslen(value);
+  if(chars == 0)
+    return NULL;
+
+  for(size_t offset = 0; offset + sizeof(ProxyUnicodeString) <= PROXY_LDR_ENTRY_SCAN;
+      offset += sizeof(void *))
+  {
+    ProxyUnicodeString *name = (ProxyUnicodeString *)(entry + offset);
+
+    if(name->Length == 0 || (name->Length % sizeof(wchar_t)) != 0)
+      continue;
+
+    if(name->Length > name->MaximumLength || name->MaximumLength > 0x1000)
+      continue;
+
+    if(name->Length / sizeof(wchar_t) != chars)
+      continue;
+
+    if(!IsReadableMemory(name->Buffer, name->Length))
+      continue;
+
+    if(_wcsnicmp(name->Buffer, value, chars) != 0)
+      continue;
+
+    return name;
+  }
+
+  return NULL;
+}
+
+// points `name` at a copy of `value` taken from the process heap. The loader
+// frees these strings with the process heap when the module is unloaded, so the
+// replacement has to come from the same heap. The buffer that was there before is
+// deliberately left alone - the loader may still be reading it, and it is freed
+// together with the entry it belongs to.
+static bool ReplaceModuleNameField(ProxyUnicodeString *name, const wchar_t *value)
+{
+  const size_t bytes = (wcslen(value) + 1) * sizeof(wchar_t);
+  if(bytes > 0xfffe)
+    return false;
+
+  wchar_t *copy = (wchar_t *)HeapAlloc(GetProcessHeap(), 0, bytes);
+  if(copy == NULL)
+  {
+    PROXY_LOG("couldn't allocate %llu bytes to rename a module", (unsigned long long)bytes);
+    return false;
+  }
+
+  memcpy(copy, value, bytes);
+
+  name->Buffer = copy;
+  name->Length = (USHORT)(bytes - sizeof(wchar_t));
+  name->MaximumLength = (USHORT)bytes;
+  return true;
+}
+
+// rewrites BaseDllName/FullDllName of this module's entry in the PEB. The entry
+// is identified by its full path, which is unique among the loaded modules.
+static bool RenameInPeb(const wchar_t *realFullPath, const wchar_t *newName,
+                        const wchar_t *newFullPath)
+{
+  ProxyPeb *peb = CurrentPeb();
+
+  if(peb == NULL || peb->Ldr == NULL)
+  {
+    PROXY_LOG("couldn't locate this process's module list");
+    return false;
+  }
+
+  const wchar_t *slash = wcsrchr(realFullPath, L'\\');
+  const wchar_t *realName = slash ? slash + 1 : realFullPath;
+
+  ProxyListEntry *head = &peb->Ldr->InLoadOrderModuleList;
+
+  bool renamedName = false;
+  bool renamedPath = false;
+
+  for(ProxyListEntry *link = head->Flink; link != NULL && link != head; link = link->Flink)
+  {
+    BYTE *module = (BYTE *)link;
+
+    ProxyUnicodeString *full = FindModuleNameField(module, realFullPath);
+    if(full == NULL)
+      continue;
+
+    ProxyUnicodeString *base = FindModuleNameField(module, realName);
+    if(base == NULL || base == full)
+    {
+      PROXY_LOG("found '%ls' in the module list but not its file name '%ls'", realFullPath,
+                realName);
+      return false;
+    }
+
+    renamedName = ReplaceModuleNameField(base, newName);
+    renamedPath = ReplaceModuleNameField(full, newFullPath);
+    break;
+  }
+
+  if(!renamedName && !renamedPath)
+    PROXY_LOG("this module ('%ls') was not found in the module list", realFullPath);
+
+  return renamedName && renamedPath;
+}
+
+static void DisguiseDeployedProxy(HMODULE self)
+{
+  if(self == NULL)
+    return;
+
+  wchar_t selfPath[MAX_PATH] = {};
+  DWORD len = GetModuleFileNameW(self, selfPath, MAX_PATH);
+  if(len == 0 || len >= MAX_PATH)
+  {
+    PROXY_LOG("couldn't query this module's own path (%u)", GetLastError());
+    return;
+  }
+
+  const wchar_t *slash = wcsrchr(selfPath, L'\\');
+  const wchar_t *fileName = slash ? slash + 1 : selfPath;
+
+  // only disguise the proxy where it is deployed as the application's dxgi.dll. If
+  // this module was loaded under another name it is not shadowing the system dxgi,
+  // and renaming it would be misleading rather than useful.
+  if(slash == NULL || _wcsicmp(fileName, L"dxgi.dll") != 0)
+  {
+    PROXY_LOG("not disguising '%ls': not deployed as dxgi.dll", selfPath);
+    return;
+  }
+
+  // the name comes from the launcher, which validates it before publishing - but this
+  // is data another process wrote, so only a plain file name is accepted here either.
+  wchar_t newName[MAX_PATH] = {};
+
+  bool valid = gDisguiseName[0] != 0;
+
+  for(size_t i = 0; valid && gDisguiseName[i] != 0; i++)
+  {
+    if(gDisguiseName[i] == L'\\' || gDisguiseName[i] == L'/' || gDisguiseName[i] == L':' ||
+       gDisguiseName[i] < 0x20)
+      valid = false;
+  }
+
+  if(valid)
+  {
+    wcscpy_s(newName, gDisguiseName);
+  }
+  else
+  {
+    if(gDisguiseName[0] != 0)
+      PROXY_LOG("ignoring the configured disguise name '%ls': not a plain file name", gDisguiseName);
+
+    wcscpy_s(newName, DLL_MODE_DEFAULT_PROXY_NAME);
+  }
+
+  // the application did not ship a dxgi.dll of its own, so a configured name equal to
+  // the deployed name means the disguise is turned off
+  if(_wcsicmp(newName, fileName) == 0)
+  {
+    PROXY_LOG("not disguising '%ls': disabled by the configuration", selfPath);
+    return;
+  }
+
+  // where the disguised path points: the system directory (a real, signed system module
+  // of that name, which is the default) or the real file's own directory (where that name
+  // then deliberately does not exist)
+  bool systemDir = (gDisguisePath != DLL_MODE_PATH_PROXY_DIR);
+
+  wchar_t dir[MAX_PATH] = {};
+
+  if(systemDir)
+  {
+    if(GetSystemDirectoryW(dir, MAX_PATH - 1) == 0)
+    {
+      PROXY_LOG("couldn't query the system directory (%u), using this module's own directory",
+                GetLastError());
+      systemDir = false;
+    }
+  }
+
+  if(!systemDir)
+  {
+    const size_t dirChars = (size_t)(fileName - selfPath);
+    memcpy(dir, selfPath, dirChars * sizeof(wchar_t));
+    dir[dirChars] = 0;
+  }
+
+  if(dir[0] != 0 && dir[wcslen(dir) - 1] != L'\\')
+    wcscat_s(dir, L"\\");
+
+  wchar_t newFullPath[MAX_PATH] = {};
+
+  if(wcslen(dir) + wcslen(newName) + 1 >= MAX_PATH)
+  {
+    PROXY_LOG("not disguising '%ls': the disguised path would be too long", selfPath);
+    return;
+  }
+
+  wcscpy_s(newFullPath, dir);
+  wcscat_s(newFullPath, newName);
+
+  PROXY_LOG("disguising '%ls' as '%ls' (%s)", selfPath, newFullPath,
+            systemDir ? "in the system directory" : "in this module's directory");
+
+  if(RenameInPeb(selfPath, newName, newFullPath))
+  {
+    // report what the process - and anything else reading its PEB - sees now
+    wchar_t check[MAX_PATH] = {};
+    GetModuleFileNameW(self, check, MAX_PATH - 1);
+
+    PROXY_LOG("module renamed in the PEB: '%ls' is now '%ls' (%s)", selfPath, check,
+              _wcsicmp(check, newFullPath) == 0 ? "verified" : "MISMATCH");
+  }
+
+  wchar_t renamedPath[MAX_PATH] = {};
+  if(wcslen(selfPath) + PROXY_ARRAY_COUNT(PROXY_RENAMED_SUFFIX) >= MAX_PATH)
+  {
+    PROXY_LOG("not renaming '%ls': the new name would be too long", selfPath);
+    return;
+  }
+
+  wcscpy_s(renamedPath, selfPath);
+  wcscat_s(renamedPath, PROXY_RENAMED_SUFFIX);
+
+  // MOVEFILE_REPLACE_EXISTING: a .tmp left behind by a previous run must not stop
+  // the rename
+  if(MoveFileExW(selfPath, renamedPath, MOVEFILE_REPLACE_EXISTING))
+    PROXY_LOG("renamed '%ls' to '%ls'", selfPath, renamedPath);
+  else
+    PROXY_LOG("couldn't rename '%ls' to '%ls' (%u)", selfPath, renamedPath, GetLastError());
+}
+
 static void InitProxy()
 {
   if(gInitialised)
@@ -407,6 +759,16 @@ static void InitProxy()
   SharedConfig config = OpenSharedConfig();
   ShimData *data = config.data;
   bool armed = (data != NULL && data->dllMode != 0 && data->rdocpath[0] != 0);
+
+  // remember which disguise the launcher asked for: it is published in the same shared
+  // data, which is only mapped while InitProxy runs
+  if(data != NULL)
+  {
+    gDisguisePath = data->proxypath;
+
+    if(data->proxyname[0] != 0)
+      wcsncpy_s(gDisguiseName, data->proxyname, _TRUNCATE);
+  }
 
   // 1. the real system dxgi is always needed: our exports forward to it.
   gSystemDxgi = LoadSystemModule(L"dxgi.dll");
@@ -491,7 +853,13 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID)
   {
     gSelfModule = hModule;
     DisableThreadLibraryCalls(hModule);
+
+    // loads the system dxgi/d3d12 and the capture dll, installs the hooks
     InitProxy();
+
+    // last thing in DllMain: with everything loaded, the proxy can stop looking
+    // like a dxgi.dll the application did not ship with
+    DisguiseDeployedProxy(hModule);
   }
 
   return TRUE;

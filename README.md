@@ -1,74 +1,70 @@
-<p align="center"><img src="https://user-images.githubusercontent.com/661798/36482670-f81601c0-170b-11e8-8adb-2365b346ac27.png" /></p>
+# CaptureProbe · 个人修改版
 
-[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
-[![CI](https://github.com/baldurk/renderccccc/actions/workflows/ci.yml/badge.svg?branch=v1.x&event=push)](https://github.com/baldurk/renderccccc/actions)
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](docs/CODE_OF_CONDUCT.md) 
+CaptureProbe 是基于 RenderDoc 修改的个人版本，面向 Windows 图形程序的帧捕获、回放与调试。
 
-Renderccccc is a frame-capture based graphics debugger, currently available for Vulkan, D3D11, D3D12, OpenGL, and OpenGL ES development on Windows, Linux, Android, and Nintendo Switch&trade;. It is completely open-source under the MIT license.
+本项目不是官方发行版，主要用于个人开发、学习和授权测试。个人修改部分由本仓库维护，不代表原项目的功能承诺或官方支持。
 
-Renderccccc is intended for debugging your own programs only. Any discussion of capturing programs that you did not create will not be allowed in any official public Renderccccc setting, including the issue tracker, discord, or via email. For example this includes capturing commercial games that you did not create, or capturing Google Maps or Google Earth. Note: Capturing projects you created that use a third party engine like Unreal or Unity, or open source and free projects is completely fine and supported.
+## 图形调试功能
 
-If you have any questions, suggestions or problems or you can [create an issue](https://github.com/baldurk/renderccccc/issues/new/choose) here on github, [email me directly](mailto:baldurk@baldurk.org) or come into [IRC](https://webchat.oftc.net/?channels=renderccccc) or [Discord](https://discord.gg/ahq6yRB) to discuss it.
+- **帧捕获与回放**：记录图形程序的渲染帧，保存捕获文件，并在图形界面中回放和分析。
+- **渲染事件查看**：浏览绘制、计算和资源操作事件，定位需要分析的渲染步骤。
+- **纹理与资源检查**：查看纹理、渲染目标和缓冲区内容，检查资源在不同事件中的状态。
+- **图形管线查看**：检查着色器、资源绑定、常量和其他管线状态。
+- **网格查看**：查看顶点、索引及相关几何数据。
+- **着色器分析**：提供着色器查看与调试能力，具体支持范围取决于图形 API 和设备。
+- **像素分析**：提供像素历史和相关调试功能，便于排查渲染结果。
 
-To install on windows run the appropriate installer for your OS ([64-bit](https://renderccccc.org/stable/latest/Renderccccc_latest_64.msi) | [32-bit](https://renderccccc.org/stable/latest/Renderccccc_latest_32.msi)) or download the portable zip from the [builds page](https://renderccccc.org/builds). The 64-bit windows build fully supports capturing from 32-bit programs. On linux only 64-bit x86 is supported - there is a precompiled [binary tarball](https://renderccccc.org/stable/latest/renderccccc_latest.tar.gz) available, or your distribution may package it. If not you can [build from source](docs/CONTRIBUTING/Compiling.md).
+## 个人修改功能
 
-* **Downloads**: Stable and nightly builds: https://renderccccc.org/builds ( [Symbol server](https://renderccccc.org/symbols) )
-* **Documentation**: [HTML online](https://renderccccc.org/docs), [CHM in builds](https://renderccccc.org/docs/renderccccc.chm), [Videos](https://www.youtube.com/user/baldurkarlsson)
-* **Contact**: [baldurk@baldurk.org](mailto:baldurk@baldurk.org), [#renderccccc on OFTC IRC](https://webchat.oftc.net/?channels=renderccccc), [Discord server](https://discord.gg/ahq6yRB)
-* **Code of Conduct**: [Contributor Covenant](docs/CODE_OF_CONDUCT.md)
-* **Information for contributors**: [All contribution information](docs/CONTRIBUTING.md), [Compilation instructions](docs/CONTRIBUTING/Compiling.md)
-* **Community extensions**: [Extensions repository](https://github.com/baldurk/renderccccc-contrib)
+### CaptureProbe 名称与界面
 
-Screenshots
---------------
+统一使用 CaptureProbe 产品名称，提供图形界面、命令行工具和应用内 API，便于本地测试与日常调试。
 
-| [ ![Texture view](https://renderccccc.org/fp/ts_screen1.jpg?2) ](https://renderccccc.org/fp/screen1.jpg) | [ ![Pixel history & shader debug](https://renderccccc.org/fp/ts_screen2.jpg?2) ](https://renderccccc.org/fp/screen2.png) |
+### 多种捕获模式
+
+- **常规模式**：保留基础的应用启动和捕获功能。
+- **Hook Mode**：提供额外的实验性启动捕获选项。
+- **DLL Mode**：提供独立的捕获模式，可在捕获窗口中选择。
+- **等待外部启动**：DLL Mode 支持先准备捕获，再等待应用由其原有启动器启动。
+- **已有进程捕获**：保留对已运行进程的捕获入口。
+- **子进程捕获**：保留相关捕获选项，便于调试包含启动器或多个进程的应用。
+
+### DLL Mode 配置
+
+- **名称下拉选择**：提供多个预设名称，包含原有的 `mfplat.dll` 选项。
+- **自定义名称**：允许填写其他名称，不限于下拉框中的预设。
+- **路径选项**：提供系统目录和应用目录两种配置。
+- **保留原名称**：提供不更改名称的选项，便于兼容性测试和对照测试。
+- **配置保存与恢复**：捕获设置包含名称与路径选项，便于重复使用。
+- **命令行配置**：支持从命令行指定 DLL Mode 的相关选项。
+
+### Windows 版本
+
+提供 x64 与 x86 构建，满足不同位数程序的本地测试需求。
+
+## 图形 API
+
+本项目保留原项目的图形 API 调试能力，Windows 版本主要面向：
+
+| 图形 API | 功能范围 |
 | --- | --- |
-| [ ![Mesh viewer](https://renderccccc.org/fp/ts_screen3.jpg?2) ](https://renderccccc.org/fp/screen3.png) | [ ![Pipeline viewer & constants](https://renderccccc.org/fp/ts_screen4.jpg?2) ](https://renderccccc.org/fp/screen4.png) |
+| Direct3D 11 | 帧捕获、回放与图形调试 |
+| Direct3D 12 | 帧捕获、回放与图形调试 |
+| Vulkan | 帧捕获、回放与图形调试 |
+| OpenGL / OpenGL ES | 适用版本的帧捕获、回放与图形调试 |
 
-API Support
---------------
+实际可用功能取决于应用、系统环境、显卡驱动及所使用的 API 版本。本个人版本的维护与测试以 Windows 为主，不对其他平台的修改兼容性作出保证。
 
-|                          | Windows                  | Linux                    | Android                   |
-| ------------------------ | ------------------------ | ------------------------ | ------------------------  |
-| Vulkan                   | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:        |
-| OpenGL ES 2.0 - 3.2      | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:        |
-| OpenGL 3.2 - 4.6 Core    | :heavy_check_mark:       | :heavy_check_mark:       |  N/A                      |
-| D3D11 & D3D12            | :heavy_check_mark:       |  N/A                     |  N/A                      |
-| OpenGL 1.0 - 2.0 Compat  | :heavy_multiplication_x: | :heavy_multiplication_x: |  N/A                      |
-| D3D9 & 10                | :heavy_multiplication_x: |  N/A                     |  N/A                      |
-| Metal                    |  N/A                     |  N/A                     |  N/A                      |
+## 使用范围与注意事项
 
-* Nintendo Switch&trade; support is distributed separately for authorized developers as part of the NintendoSDK. For more information, consult the Nintendo Developer Portal.
+- 仅用于自己开发的程序，或已获得明确授权的测试对象。
+- 实验性捕获模式可能存在兼容性问题，应根据目标程序进行测试。
+- 预设名称只是可选配置，不代表对所有程序均兼容，也不构成任何安全性保证。
+- 不同版本的组件应配套使用，避免混用造成配置或运行异常。
+- 本版本的问题和功能建议应在本仓库反馈，不应作为官方版本问题提交给原项目。
 
-Downloads
---------------
+## 许可与致谢
 
-There are [binary releases](https://renderccccc.org/builds) available, built from the release targets. If you just want to use the program and you ended up here, this is what you want :).
+本项目遵循 MIT 许可证，完整条款及第三方组件声明见 [许可证](LICENSE.md)。
 
-It's recommended that if you're new you start with the stable builds. Nightly builds are available every day from the [v1.x branch here](https://renderccccc.org/builds#nightly) if you need it, but correspondingly may be less stable.
-
-Documentation
---------------
-
-The text documentation is available [online for the latest stable version](https://renderccccc.org/docs/), as well as in [renderccccc.chm](https://renderccccc.org/docs/renderccccc.chm) in any build. It's built from [restructured text with sphinx](docs).
-
-As mentioned above there are some [youtube videos](https://www.youtube.com/user/baldurkarlsson) showing the use of some basic features and an introduction/overview.
-
-There is also a great presentation by [@Icetigris](https://twitter.com/Icetigris) which goes into some details of how Renderccccc can be used in real world situations: [slides are up here](https://docs.google.com/presentation/d/1LQUMIld4SGoQVthnhT1scoA3k4Sg0as14G4NeSiSgFU/edit#slide=id.p).
-
-License
---------------
-
-Renderccccc is released under the MIT license, see [LICENSE.md](LICENSE.md) for full text as well as 3rd party library acknowledgements.
-
-Compiling
----------
-
-Building Renderccccc is fairly straight forward on most platforms. See [Compiling.md](docs/CONTRIBUTING/Compiling.md) for more details.
-
-Contributing & Development
---------------
-
-I've added some notes on how to contribute, as well as where to get started looking through the code in [Developing-Change.md](docs/CONTRIBUTING/Developing-Change.md). All contribution information is available under [CONTRIBUTING.md](docs/CONTRIBUTING.md).
-
+感谢 RenderDoc 原作者及贡献者。本个人修改版保留原项目与第三方组件的版权声明。

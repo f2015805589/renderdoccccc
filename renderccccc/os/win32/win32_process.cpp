@@ -2375,21 +2375,28 @@ static bool FileContentsMatch(const rdcstr &a, const rdcstr &b)
 }
 
 // deletes the proxy we copied into the application's directory, as long as it is
-// still our file. Leaving it behind would change how the application loads dxgi
-// on later launches.
+// still our file. The proxy renames itself out of the way as soon as the target has
+// loaded it - 'dxgi.dll' becomes 'dxgi.dll.tmp' - so both names are checked.
+// Leaving either behind would change how the application loads dxgi on later
+// launches.
 static void DeleteDeployedProxy(const rdcstr &proxySource, const rdcstr &targetProxy)
 {
-  if(!FileIO::exists(targetProxy))
-    return;
+  const rdcstr names[] = {targetProxy, targetProxy + ".tmp"};
 
-  if(!FileContentsMatch(proxySource, targetProxy))
+  for(const rdcstr &name : names)
   {
-    RDCWARN("Not removing '%s' - it is no longer CaptureProbe's proxy", targetProxy.c_str());
-    return;
-  }
+    if(!FileIO::exists(name))
+      continue;
 
-  FileIO::Delete(targetProxy);
-  RDCLOG("Removed the dll mode proxy '%s'", targetProxy.c_str());
+    if(!FileContentsMatch(proxySource, name))
+    {
+      RDCWARN("Not removing '%s' - it is no longer CaptureProbe's proxy", name.c_str());
+      continue;
+    }
+
+    FileIO::Delete(name);
+    RDCLOG("Removed the dll mode proxy '%s'", name.c_str());
+  }
 }
 
 // runs on a worker thread with its own handle on the process
@@ -2494,6 +2501,64 @@ static uint32_t FindRunningProcessByImage(const rdcstr &app)
 
   CloseHandle(snap);
   return found;
+}
+
+// the name the dll mode proxy disguises itself as, as published to the target. It has
+// to be a plain file name - never a path - and anything unusable falls back to the
+// default so that a bad option can't stop the launch. 'dxgi.dll' means "don't disguise
+// at all" and is passed through unchanged.
+static rdcstr SanitiseDllModeProxyName(const char *configured)
+{
+  rdcstr name = configured != NULL ? rdcstr(configured) : rdcstr();
+  name.trim();
+
+  // accept a full path being pasted in, but only the file name is used
+  for(int i = (int)name.size() - 1; i >= 0; i--)
+  {
+    if(name[i] == '\\' || name[i] == '/')
+    {
+      name = name.substr((size_t)i + 1);
+      break;
+    }
+  }
+
+  name.trim();
+
+  if(name.empty())
+    return StringFormat::Wide2UTF8(DLL_MODE_DEFAULT_PROXY_NAME);
+
+  if(name.size() < 4 || strlower(name.substr(name.size() - 4)) != ".dll")
+    name += ".dll";
+
+  bool invalid = name.size() >= 64;
+
+  for(size_t i = 0; !invalid && i < name.size(); i++)
+  {
+    const char c = name[i];
+
+    if(c < 0x20 || c == '<' || c == '>' || c == ':' || c == '"' || c == '/' || c == '\\' || c == '|' ||
+       c == '?' || c == '*')
+      invalid = true;
+  }
+
+  if(invalid)
+  {
+    RDCWARN("Ignoring dll mode proxy name '%s' - it is not a usable file name, using the default",
+            configured);
+    return StringFormat::Wide2UTF8(DLL_MODE_DEFAULT_PROXY_NAME);
+  }
+
+  return name;
+}
+
+// where the disguised full path points - anything unexpected means the default (the
+// system directory)
+static uint32_t SanitiseDllModeProxyPath(uint32_t configured)
+{
+  if(configured == DLL_MODE_PATH_PROXY_DIR)
+    return DLL_MODE_PATH_PROXY_DIR;
+
+  return DLL_MODE_PATH_SYSTEM_DIR;
 }
 
 static rdcpair<RDResult, uint32_t> LaunchWithDllProxy(
@@ -2701,6 +2766,25 @@ static rdcpair<RDResult, uint32_t> LaunchWithDllProxy(
   strncpy_s(data.view->debuglog, sizeof(data.view->debuglog), RDCGETLOGFILE(), _TRUNCATE);
   memcpy(data.view->opts, &opts, sizeof(CaptureOptions));
   data.view->dllMode = 1;
+
+  // the proxy disguises itself once it has loaded everything - the launcher decides
+  // under which name and where the disguised path points, so both are validated here
+  const rdcstr proxyName = SanitiseDllModeProxyName(opts.dllModeProxyName);
+
+  data.view->proxypath = SanitiseDllModeProxyPath(opts.dllModeProxyPath);
+  wcsncpy_s(data.view->proxyname, StringFormat::UTF82Wide(proxyName).c_str(), _TRUNCATE);
+
+  if(strlower(proxyName) == "dxgi.dll")
+  {
+    RDCLOG("Dll mode proxy will not disguise itself (the configured name is dxgi.dll)");
+  }
+  else
+  {
+    RDCLOG("Dll mode proxy will disguise itself as '%s' (%s)", proxyName.c_str(),
+           data.view->proxypath == DLL_MODE_PATH_SYSTEM_DIR ? "disguised path in the system directory"
+                                                            : "disguised path next to the proxy");
+  }
+
   MemoryBarrier();
 
   if(pi.hThread)

@@ -530,6 +530,118 @@
        </widget>
       </item>
       <item>
+       <widget class="QFrame" name="DllModeNameFrame">
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Plain</enum>
+        </property>
+        <layout class="QHBoxLayout" name="dllModeNameLayout">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QComboBox" name="DllModeName">
+           <property name="minimumSize">
+            <size>
+             <width>200</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>With DLL Mode: the name the deployed proxy disguises itself as once CaptureProbe and its hooks are loaded. The file it was loaded from is renamed to dxgi.dll.tmp and its entry in the module list reports this name.
+
+Choose the name of a system component the application is unlikely to load itself - a name that is already in the process would appear twice in the module list. Any file name can be typed in, and 'dxgi.dll' turns the disguise off.</string>
+           </property>
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+           <property name="insertPolicy">
+            <enum>QComboBox::NoInsert</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="DllModeNameLabel">
+           <property name="toolTip">
+            <string>The name the proxy dxgi.dll disguises itself as when DLL Mode is used.</string>
+           </property>
+           <property name="text">
+            <string>DLL Mode: proxy name</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QFrame" name="DllModePathFrame">
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Plain</enum>
+        </property>
+        <layout class="QHBoxLayout" name="dllModePathLayout">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QComboBox" name="DllModePath">
+           <property name="minimumSize">
+            <size>
+             <width>200</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>With DLL Mode: where the disguised path of the proxy points.
+
+System directory - the disguised path names a real, signed system file, so a check for the file or its signature finds an ordinary system module. Only use this with a name the application does not load itself, or the module list will end up with two entries with the same path.
+
+Next to the proxy - the disguised path stays in the application's directory, where that file deliberately does not exist, so nothing can load a module from it, but a check for the file will not find it.</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="DllModePathLabel">
+           <property name="toolTip">
+            <string>Where the disguised path of the proxy points.</string>
+           </property>
+           <property name="text">
+            <string>DLL Mode: proxy path</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
        <widget class="QCheckBox" name="RefAllResources">
         <property name="toolTip">
          <string>Consider all resources to be included, even if unused in the capture frame</string>

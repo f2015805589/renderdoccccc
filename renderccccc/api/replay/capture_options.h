@@ -61,6 +61,8 @@ struct CaptureOptions
     hookMode = false;
     dllMode = false;
     dllModeWait = false;
+    dllModeProxyName[0] = 0;
+    dllModeProxyPath = 0;
     softMemoryLimit = 0;
   }
 
@@ -290,6 +292,36 @@ Default - disabled
 :type: bool
 )");
   bool dllModeWait;
+
+  DOCUMENT(R"(With DLL mode, the name the deployed proxy dxgi.dll disguises itself as once it has
+loaded everything: after the capture dll and its hooks are in place, the proxy's entry in the
+loader's module list reports this name instead of dxgi.dll, and the file it was loaded from is
+renamed to 'dxgi.dll.tmp'.
+
+Pick the name of a system component the application is unlikely to load itself - a name that is
+already in the process would appear twice in the module list. 'dxgi.dll' disables the disguise and
+leaves the proxy visible under its own name.
+
+Empty means the default (DLL_MODE_DEFAULT_PROXY_NAME in global_hook_data.h).
+
+:type: str
+)");
+  char dllModeProxyName[64];
+
+  DOCUMENT(R"(With DLL mode, where the disguised full path of the proxy points:
+0 - the system directory (%SystemRoot%\System32), where a real, signed system file of that name
+exists. This looks like an ordinary system module, unless the application loads that module itself,
+in which case the module list will contain two entries with the same path. Only use this with a name
+the application does not load itself.
+1 - next to the real proxy file. That path deliberately does not exist on disk, so nothing can load
+a second module from it, but a check for the file will not find it.
+
+Default - 0 (the system directory)
+
+:type: int
+)");
+  uint32_t dllModeProxyPath;
+
   DOCUMENT(R"(Define a soft memory limit which some APIs may aim to keep overhead under where
 possible. Anything above this limit will where possible be saved directly to disk during capture.
 This will cause increased disk space use (which may cause a capture to fail if disk space is

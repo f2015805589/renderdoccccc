@@ -37,6 +37,26 @@ device get wrapped and a capture can be taken.
    `INTERNAL_SetCaptureOptions`.
 5. The target control ident is published back into the shared memory, so the
    launcher can connect to the process exactly as it does after an injection.
+6. Last, the proxy disguises itself so the process carries no visible trace of a
+   `dxgi.dll` the application did not ship with:
+   * the file it was loaded from is renamed to `dxgi.dll.tmp`. A loaded image
+     cannot be deleted (the delete is refused with a sharing violation) but it can
+     be renamed, because the loader opens module files with `FILE_SHARE_DELETE`.
+     The launcher deletes the renamed file once the target exits - it compares the
+     contents first, so it only ever removes its own proxy. A side effect is that a
+     process the application starts by itself after this point loads the system
+     `dxgi.dll`, not the proxy.
+   * the module's entry in the loader's module list is renamed to `mfplat.dll`
+     (`BaseDllName` and `FullDllName`), so `GetModuleFileName`, module enumeration
+     and toolhelp snapshots report a system module. The disguised full path keeps
+     the real directory but names a file that does not exist, so nothing can load a
+     second copy of the proxy from the disguised name. The fields are found by
+     their contents instead of by hard-coded offsets, so no particular Windows
+     version's `LDR_DATA_TABLE_ENTRY` layout is assumed.
+
+Both halves of step 6 are best effort and independent: if the file cannot be
+renamed (read-only directory, something holding the file) the module list is still
+disguised, and the other way around. Everything is logged.
 
 Diagnostics are written to `%TEMP%\CaptureProbe\dllmode_proxy.log`.
 

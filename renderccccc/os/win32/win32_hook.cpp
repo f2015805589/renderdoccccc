@@ -309,14 +309,35 @@ struct CachedHookData
         return;
     }
 
-    // increment the module reference count, so it doesn't disappear while we're processing it
-    // there's a very small race condition here between if GetModuleFileName returns, the module is
-    // unloaded then we load it again. The only way around that is inserting very scary locks
-    // between here
-    // and FreeLibrary that I want to avoid. Worst case, we load a dll, hook it, then unload it
-    // again.
-    HMODULE refcountModHandle = LoadLibraryW(modpath);
-    RDCASSERTEQUAL(refcountModHandle, module);
+    // take a reference on the module so it doesn't disappear while we're processing it.
+    //
+    // This looks the module up by an address inside it rather than loading the path the
+    // loader reported for it: the dll mode proxy renames itself out of the way - and can
+    // disguise itself as a system module - once it has loaded everything, so its recorded
+    // path may no longer exist. LoadLibrary on that path would fail, or worse, load an
+    // entirely different module that happens to have the same name. The reference is only
+    // needed to pin the module down, and the handle returned is the same module base that
+    // the snapshot gave us.
+    HMODULE refcountModHandle = NULL;
+    GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCWSTR)module, &refcountModHandle);
+
+    bool ownReference = refcountModHandle != NULL;
+
+    if(!ownReference)
+    {
+      // a module the snapshot and GetModuleFileName both reported as loaded should always be
+      // found here, unless it was unloaded in between - then process it as best we can
+      RDCDEBUG("Module %s is no longer registered with the loader, processing it without taking "
+               "a reference",
+               modName);
+
+      refcountModHandle = module;
+    }
+    else
+    {
+      RDCASSERTEQUAL(refcountModHandle, module);
+    }
+
     byte *baseAddress = (byte *)refcountModHandle;
 
     PIMAGE_DOS_HEADER dosheader = (PIMAGE_DOS_HEADER)baseAddress;
@@ -325,7 +346,8 @@ struct CachedHookData
     {
       RDCDEBUG("Ignoring module %s, since magic is 0x%04x not 0x%04x", modName,
                (uint32_t)dosheader->e_magic, 0x5a4dU);
-      FreeLibrary(refcountModHandle);
+      if(ownReference)
+        FreeLibrary(refcountModHandle);
       return;
     }
 
@@ -431,7 +453,8 @@ struct CachedHookData
                       RDCDEBUG("Stopping hooking module, %d %d %d", (int)applied, (int)already,
                                (int)missedOrdinals);
 #endif
-                      FreeLibrary(refcountModHandle);
+                      if(ownReference)
+                        FreeLibrary(refcountModHandle);
                       return;
                     }
                   }
@@ -494,7 +517,8 @@ struct CachedHookData
               RDCDEBUG("Stopping hooking module, %d %d %d", (int)applied, (int)already,
                        (int)missedOrdinals);
 #endif
-              FreeLibrary(refcountModHandle);
+              if(ownReference)
+                FreeLibrary(refcountModHandle);
               return;
             }
           }
@@ -517,7 +541,8 @@ struct CachedHookData
       importDesc++;
     }
 
-    FreeLibrary(refcountModHandle);
+    if(ownReference)
+      FreeLibrary(refcountModHandle);
   }
 };
 

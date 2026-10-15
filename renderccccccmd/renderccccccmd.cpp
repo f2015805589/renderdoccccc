@@ -191,6 +191,8 @@ private:
   bool hookMode = false;
   bool dllMode = false;
   bool dllModeWait = false;
+  std::string dllModeName;
+  std::string dllModePath;
 
 public:
   CaptureCommand() : Command() {}
@@ -207,6 +209,18 @@ public:
     parser.add("dll-mode-wait", 0,
                "With --dll-mode, arm only: deploy the proxy and wait for the application to be started "
                "from outside (for example by Steam).");
+    parser.add<std::string>("dll-mode-name", 0,
+                            "With --dll-mode, the name the proxy disguises itself as once it has "
+                            "loaded everything. Pick a system component the application is unlikely "
+                            "to load itself (for example msdmo.dll, dsdmo.dll, mfreadwrite.dll), or "
+                            "'dxgi.dll' to keep the proxy visible under its own name.",
+                            false);
+    parser.add<std::string>(
+        "dll-mode-path", 0,
+        "With --dll-mode, where the disguised path of the proxy points: 'system' (the default - the "
+        "system directory, where a real signed system file of that name exists) or 'dir' (next to "
+        "the proxy, where that file does not exist, so nothing can load a module from it).",
+        false, std::string("system"));
   }
   virtual const char *Description() { return "Launches the given executable to capture."; }
   virtual bool IsInternalOnly() { return false; }
@@ -241,6 +255,14 @@ public:
     hookMode = parser.exist("hook-mode");
     dllMode = parser.exist("dll-mode");
     dllModeWait = parser.exist("dll-mode-wait");
+    dllModeName = parser.get<std::string>("dll-mode-name");
+    dllModePath = parser.get<std::string>("dll-mode-path");
+
+    if(!dllModePath.empty() && dllModePath != "dir" && dllModePath != "system")
+    {
+      std::cerr << "Error: --dll-mode-path must be 'dir' or 'system'." << std::endl;
+      return false;
+    }
 
     return true;
   }
@@ -251,6 +273,14 @@ public:
     opts.hookMode = hookMode;
     opts.dllMode = dllMode;
     opts.dllModeWait = dllModeWait;
+
+    if(!dllModeName.empty())
+      strncpy_s(opts.dllModeProxyName, sizeof(opts.dllModeProxyName), dllModeName.c_str(), _TRUNCATE);
+
+    // DLL_MODE_PATH_PROXY_DIR - see renderccccc/os/win32/global_hook_data.h. The system
+    // directory is 0, so it is what an unconfigured path gets.
+    if(dllModePath == "dir")
+      opts.dllModeProxyPath = 1;
     std::cout << "Launching '" << executable << "'";
 
     if(!cmdLine.empty())
