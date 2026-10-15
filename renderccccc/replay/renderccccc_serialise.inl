@@ -114,8 +114,10 @@ void DoSerialise(SerialiserType &ser, CaptureOptions &el)
   SERIALISE_MEMBER(hookMode);
   SERIALISE_MEMBER(dllMode);
   SERIALISE_MEMBER(dllModeWait);
+  SERIALISE_MEMBER(dllModeProxyName);
+  SERIALISE_MEMBER(dllModeProxyPath);
 
-  SIZE_CHECK(24);
+  SIZE_CHECK(92);
 }
 
 template <typename SerialiserType>
